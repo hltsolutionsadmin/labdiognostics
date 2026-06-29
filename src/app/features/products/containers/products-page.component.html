@@ -1,0 +1,95 @@
+<section class="container">
+  <div class="hero">
+    <div class="hero__left">
+      <h1 class="hero__title">
+        Accurate Reports.
+        <span class="hero__accent">Better Health.</span>
+      </h1>
+      <p class="hero__desc">
+        Book lab tests and health checkup packages with ease.
+        Trusted by thousands for precise diagnostics and exceptional care.
+      </p>
+
+      <div class="trust">
+        <div class="trust__item">
+          <img class="trust__icon" src="/assets/icons/shield.svg" alt="" aria-hidden="true" />
+          <div class="trust__text">NABL Accredited Labs</div>
+        </div>
+        <div class="trust__item">
+          <img class="trust__icon" src="/assets/icons/home.svg" alt="" aria-hidden="true" />
+          <div class="trust__text">Home Sample Collection</div>
+        </div>
+        <div class="trust__item">
+          <img class="trust__icon" src="/assets/icons/report.svg" alt="" aria-hidden="true" />
+          <div class="trust__text">Accurate Reports</div>
+        </div>
+        <div class="trust__item">
+          <img class="trust__icon" src="/assets/icons/shield.svg" alt="" aria-hidden="true" />
+          <div class="trust__text">Safe, Secure & Confidential</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="hero__right">
+      <div class="hero__img" role="img" aria-label="Lab technician"></div>
+    </div>
+  </div>
+
+  <div class="cats">
+    <div class="cats__inner">
+      <div class="cat">
+        <img class="cat__icon" src="assets/icons/category-body.svg" alt="" aria-hidden="true" />
+        <span class="cat__text">Full Body Checkup Packages</span>
+      </div>
+      <div class="cat">
+        <img class="cat__icon" src="assets/icons/category-diabetes.svg" alt="" aria-hidden="true" />
+        <span class="cat__text">Diabetes Care</span>
+      </div>
+      <div class="cat">
+        <img class="cat__icon" src="assets/icons/category-heart.svg" alt="" aria-hidden="true" />
+        <span class="cat__text">Heart Health</span>
+      </div>
+      <div class="cat">
+        <img class="cat__icon" src="assets/icons/category-women.svg" alt="" aria-hidden="true" />
+        <span class="cat__text">Women's Health</span>
+      </div>
+      <div class="cat">
+        <img class="cat__icon" src="assets/icons/category-thyroid.svg" alt="" aria-hidden="true" />
+        <span class="cat__text">Thyroid Profile</span>
+      </div>
+      <div class="cat">
+        <img class="cat__icon" src="assets/icons/category-senior.svg" alt="" aria-hidden="true" />
+        <span class="cat__text">Senior Citizen</span>
+      </div>
+      <div class="cat">
+        <img class="cat__icon" src="assets/icons/category-child.svg" alt="" aria-hidden="true" />
+        <span class="cat__text">Children Care</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <h2 class="section-title">Popular Packages</h2>
+    <a class="view-all" routerLink="/products">View All</a>
+  </div>
+  <div class="grid">
+    @for (p of filtered(); track p.id) {
+      <app-product-card [product]="p" (addToCart)="onAdd($event)" />
+    }
+  </div>
+
+  <div class="section-head">
+    <h2 class="section-title">Popular Tests</h2>
+    <a class="view-all" routerLink="/products">View All</a>
+  </div>
+  @defer (on idle) {
+    <div class="grid grid--compact">
+      @for (p of filtered(); track p.id) {
+        <app-product-card [product]="p" (addToCart)="onAdd($event)" />
+      }
+    </div>
+  } @placeholder {
+    <div class="placeholder">Loading popular tests…</div>
+  }
+</section>

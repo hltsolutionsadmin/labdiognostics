@@ -1,0 +1,403 @@
+<section class="container">
+  <div class="stepper">
+    <button class="step" type="button" [class.is-active]="step() === 0" [class.is-done]="step() > 0" (click)="goTo(0)">
+      <span class="step__dot">1</span>
+      <span class="step__meta">
+        <span class="step__title">Address</span>
+        <span class="step__sub">Select or add address</span>
+      </span>
+    </button>
+    <div class="chev">›</div>
+    <button class="step" type="button" [class.is-active]="step() === 1" [class.is-done]="step() > 1" (click)="goTo(1)">
+      <span class="step__dot">2</span>
+      <span class="step__meta">
+        <span class="step__title">Appointment</span>
+        <span class="step__sub">Choose date & time</span>
+      </span>
+    </button>
+    <div class="chev">›</div>
+    <button class="step" type="button" [class.is-active]="step() === 2" [class.is-done]="step() > 2" (click)="goTo(2)">
+      <span class="step__dot">3</span>
+      <span class="step__meta">
+        <span class="step__title">Payment Methods</span>
+        <span class="step__sub">Select payment option</span>
+      </span>
+    </button>
+    <div class="chev">›</div>
+    <button class="step" type="button" [class.is-active]="step() === 3" [class.is-done]="false" (click)="goTo(3)">
+      <span class="step__dot">4</span>
+      <span class="step__meta">
+        <span class="step__title">Review & Place Order</span>
+        <span class="step__sub">Verify and place order</span>
+      </span>
+    </button>
+  </div>
+
+  <div class="layout">
+    <div class="panel">
+      <form (ngSubmit)="submit()" [formGroup]="form">
+        @if (step() === 0) {
+          <h1 class="h1">Select Delivery / Collection Address</h1>
+          <div class="hint">Your reports will be sent to this address</div>
+
+          <div class="modepick" aria-label="Collection mode">
+            <button
+              class="modepick__btn"
+              type="button"
+              [class.is-active]="collectionMode() === 'home'"
+              (click)="collectionMode.set('home')"
+            >
+              Home Collection
+            </button>
+            <button
+              class="modepick__btn"
+              type="button"
+              [class.is-active]="collectionMode() === 'lab'"
+              (click)="collectionMode.set('lab'); cancelAddAddress()"
+            >
+              Visit Lab
+            </button>
+          </div>
+
+          @if (collectionMode() === 'home') {
+          <div class="addr-grid">
+            <label class="addr" [class.is-selected]="selectedAddress() === 'home'" (click)="selectedAddress.set('home'); cancelAddAddress()">
+              <input class="addr__radio" type="radio" [checked]="selectedAddress() === 'home'" />
+              <div class="addr__title">
+                Home <span class="pill">Default</span>
+              </div>
+              <div class="addr__line">Door No. 12-8-32, MVP Colony, Visakhapatnam, Andhra Pradesh - 530017</div>
+              <div class="addr__line muted">Mobile: +91 98765 43210</div>
+            </label>
+
+            <label class="addr" [class.is-selected]="selectedAddress() === 'office'" (click)="selectedAddress.set('office'); cancelAddAddress()">
+              <input class="addr__radio" type="radio" [checked]="selectedAddress() === 'office'" />
+              <div class="addr__title">Office</div>
+              <div class="addr__line">2nd Floor, Tech Park, IT SEZ, Madhurawada, Visakhapatnam - 530048</div>
+              <div class="addr__line muted">Mobile: +91 98765 12345</div>
+            </label>
+          </div>
+
+          <div class="add">
+            <button class="add__btn" type="button" (click)="openAddAddress()">
+              + Add New Address
+            </button>
+          </div>
+
+          @if (showAddAddress()) {
+            <div class="subcard">
+              <div class="subcard__head">
+                <div class="subcard__title">Add New Address</div>
+                <button class="subcard__cancel" type="button" (click)="cancelAddAddress()">Cancel</button>
+              </div>
+              <div class="grid">
+                <label class="field">
+                  <span>Full Name</span>
+                  <input type="text" formControlName="fullName" placeholder="Enter full name" />
+                </label>
+                <label class="field">
+                  <span>Mobile Number</span>
+                  <input type="text" inputmode="numeric" formControlName="mobile" placeholder="Enter mobile number" />
+                </label>
+                <label class="field field--span">
+                  <span>Email</span>
+                  <input type="email" formControlName="email" placeholder="Enter email" />
+                </label>
+                <label class="field field--span">
+                  <span>House / Flat / Building No.</span>
+                  <input type="text" formControlName="addressLine1" placeholder="Enter house, flat or building no." />
+                </label>
+                <label class="field">
+                  <span>City / Town</span>
+                  <input type="text" formControlName="city" placeholder="Enter city or town" />
+                </label>
+                <label class="field">
+                  <span>Pincode</span>
+                  <input type="text" inputmode="numeric" formControlName="postalCode" placeholder="Enter pincode" />
+                </label>
+              </div>
+            </div>
+          }
+          } @else {
+            <div class="labcard">
+              <div class="labcard__title">Select Lab Center</div>
+              <div class="labgrid">
+                <button
+                  class="lab"
+                  type="button"
+                  [class.is-selected]="selectedLab() === 'center-1'"
+                  (click)="selectedLab.set('center-1')"
+                >
+                  <div class="lab__title">CareLab Diagnostics - MVP Colony</div>
+                  <div class="lab__line">MVP Colony, Visakhapatnam</div>
+                  <div class="lab__line muted">Hours: 7:00 AM - 7:00 PM</div>
+                </button>
+                <button
+                  class="lab"
+                  type="button"
+                  [class.is-selected]="selectedLab() === 'center-2'"
+                  (click)="selectedLab.set('center-2')"
+                >
+                  <div class="lab__title">CareLab Diagnostics - Madhurawada</div>
+                  <div class="lab__line">IT SEZ, Madhurawada, Visakhapatnam</div>
+                  <div class="lab__line muted">Hours: 7:00 AM - 7:00 PM</div>
+                </button>
+              </div>
+
+              <div class="subcard">
+                <div class="subcard__title">Contact Details</div>
+                <div class="grid">
+                  <label class="field">
+                    <span>Full Name</span>
+                    <input type="text" formControlName="fullName" placeholder="Enter full name" />
+                  </label>
+                  <label class="field">
+                    <span>Mobile Number</span>
+                    <input type="text" inputmode="numeric" formControlName="mobile" placeholder="Enter mobile number" />
+                  </label>
+                  <label class="field field--span">
+                    <span>Email</span>
+                    <input type="email" formControlName="email" placeholder="Enter email" />
+                  </label>
+                </div>
+              </div>
+            </div>
+          }
+        }
+
+        @if (step() === 1) {
+          <h1 class="h1">Select Appointment Slot</h1>
+          <div class="hint">Choose your preferred date, time and sample collection option</div>
+
+          <div class="appt">
+            <div class="appt__block">
+              <div class="appt__label">Sample Collection Type</div>
+              <div class="appt__types">
+                <button
+                  class="type"
+                  type="button"
+                  [class.is-selected]="collectionMode() === 'home'"
+                  (click)="collectionMode.set('home')"
+                >
+                  <div class="type__title">Home Collection</div>
+                  <div class="type__sub">Our phlebotomist will visit your home</div>
+                </button>
+                <button
+                  class="type"
+                  type="button"
+                  [class.is-selected]="collectionMode() === 'lab'"
+                  (click)="collectionMode.set('lab')"
+                >
+                  <div class="type__title">Center Visit</div>
+                  <div class="type__sub">Visit our nearest collection center</div>
+                </button>
+              </div>
+            </div>
+
+            <div class="appt__grid">
+              <div class="cal">
+                <div class="cal__head">
+                  <button class="cal__nav" type="button" aria-label="Previous month">‹</button>
+                  <div class="cal__month">{{ calendarMonthLabel }}</div>
+                  <button class="cal__nav" type="button" aria-label="Next month">›</button>
+                </div>
+                <div class="cal__dow">
+                  <span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span>
+                </div>
+                <div class="cal__grid">
+                  @for (d of calendarDays; track d) {
+                    <button class="day" type="button" [class.is-selected]="selectedDay() === d" (click)="selectDay(d)">
+                      {{ d }}
+                    </button>
+                  }
+                </div>
+                <div class="cal__legend">
+                  <span class="lg"><span class="dot dot--ok"></span> Available</span>
+                  <span class="lg"><span class="dot dot--full"></span> Fully Booked</span>
+                  <span class="lg"><span class="dot dot--na"></span> Unavailable</span>
+                </div>
+              </div>
+
+              <div class="slots">
+                <div class="slots__head">
+                  <div class="slots__title">Select Time Slot</div>
+                  <div class="slots__sub">All times are in IST</div>
+                </div>
+                <div class="slots__grid">
+                  @for (s of timeSlots; track s.value) {
+                    <button
+                      class="slot"
+                      type="button"
+                      [class.is-selected]="form.controls.appointmentTime.value === s.value"
+                      (click)="selectTime(s)"
+                    >
+                      {{ s.label }}
+                    </button>
+                  }
+                </div>
+
+                <div class="note">
+                  <div class="note__title">Fasting Required</div>
+                  <div class="note__sub">Please ensure you have fasted for 8-12 hours before the test.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (step() === 2) {
+          <h1 class="h1">Payment Methods</h1>
+          <div class="hint">Select a payment option</div>
+          <div class="pay">
+            <label class="pay__opt">
+              <input type="radio" formControlName="paymentMethod" value="upi" />
+              <div>
+                <div class="pay__title">UPI</div>
+                <div class="pay__sub">Pay using UPI apps</div>
+              </div>
+            </label>
+            <label class="pay__opt">
+              <input type="radio" formControlName="paymentMethod" value="card" />
+              <div>
+                <div class="pay__title">Card</div>
+                <div class="pay__sub">Use a credit/debit card token</div>
+              </div>
+            </label>
+            <label class="pay__opt">
+              <input type="radio" formControlName="paymentMethod" value="cod" />
+              <div>
+                <div class="pay__title">Pay at Visit</div>
+                <div class="pay__sub">Pay after sample collection</div>
+              </div>
+            </label>
+          </div>
+          @if (form.controls.paymentMethod.value !== 'cod') {
+            <label class="field field--span">
+              <span>Payment token</span>
+              <input type="text" formControlName="paymentToken" placeholder="tok_visa_123 (mock)" />
+            </label>
+          }
+        }
+
+        @if (step() === 3) {
+          <h1 class="h1">Review Your Order</h1>
+          <div class="hint">Please verify your details before placing the order</div>
+
+          <div class="reviewcards">
+            <div class="rcard">
+              <div class="rcard__head">
+                <div class="rcard__title">1. Address Details</div>
+                <button class="rcard__edit" type="button" (click)="goTo(0)">Edit</button>
+              </div>
+              <div class="rcard__body">
+                <div class="tag">{{ collectionMode() === 'home' ? 'Home Collection' : 'Center Visit' }}</div>
+                @if (collectionMode() === 'home') {
+                  <div class="rcard__line">Door No. 12-8-32, MVP Colony, Visakhapatnam, Andhra Pradesh - 530017</div>
+                  <div class="rcard__line muted">Mobile: +91 98765 43210</div>
+                } @else {
+                  <div class="rcard__line">
+                    {{ selectedLab() === 'center-1' ? 'CareLab Diagnostics - MVP Colony' : 'CareLab Diagnostics - Madhurawada' }}
+                  </div>
+                  <div class="rcard__line muted">Mobile: {{ form.controls.mobile.value }}</div>
+                }
+              </div>
+            </div>
+
+            <div class="rcard">
+              <div class="rcard__head">
+                <div class="rcard__title">2. Appointment Details</div>
+                <button class="rcard__edit" type="button" (click)="goTo(1)">Edit</button>
+              </div>
+              <div class="rcard__cols">
+                <div class="kv">
+                  <div class="kv__k">Collection Type</div>
+                  <div class="kv__v">{{ collectionMode() === 'home' ? 'Home Collection' : 'Center Visit' }}</div>
+                </div>
+                <div class="kv">
+                  <div class="kv__k">Date</div>
+                  <div class="kv__v">{{ form.controls.appointmentDate.value }}</div>
+                </div>
+                <div class="kv">
+                  <div class="kv__k">Time</div>
+                  <div class="kv__v">{{ form.controls.appointmentTime.value }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rcard">
+              <div class="rcard__head">
+                <div class="rcard__title">3. Payment Method</div>
+                <button class="rcard__edit" type="button" (click)="goTo(2)">Edit</button>
+              </div>
+              <div class="rcard__body">
+                <div class="rcard__line">
+                  {{ form.controls.paymentMethod.value === 'upi' ? 'UPI' : (form.controls.paymentMethod.value === 'card' ? 'Card' : 'Pay at Visit') }}
+                </div>
+                <div class="rcard__line muted">
+                  {{ form.controls.paymentMethod.value === 'cod' ? 'Pay after sample collection' : 'Pay using your preferred method' }}
+                </div>
+              </div>
+            </div>
+
+            <div class="terms">
+              <label class="terms__row">
+                <input type="checkbox" formControlName="acceptTerms" />
+                <span>
+                  I have read and agree to the
+                  <a class="tlink" href="#">Terms & Conditions</a>,
+                  <a class="tlink" href="#">Cancellation Policy</a> and
+                  <a class="tlink" href="#">Privacy Policy</a>.
+                </span>
+              </label>
+              @if (form.controls.acceptTerms.touched && form.controls.acceptTerms.invalid) {
+                <div class="tError">Please accept Terms & Conditions to place the order.</div>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="actions">
+          <button class="btn btn--ghost" type="button" (click)="back()" [disabled]="step() === 0 || isSubmitting()">
+            Back
+          </button>
+          @if (step() < 3) {
+            <button class="btn" type="button" (click)="next()" [disabled]="isSubmitting()">
+              Continue
+            </button>
+          } @else {
+            <button class="btn" type="submit" [disabled]="isSubmitting() || form.controls.acceptTerms.invalid">
+              Place Order {{ estimatedTotal() | currency:'INR':'symbol':'1.0-0' }}
+            </button>
+          }
+        </div>
+      </form>
+    </div>
+
+    <aside class="summary">
+      <div class="summary__panel">
+        <h2>Order Summary</h2>
+        <div class="sum-items">
+          @for (item of items(); track item.productId) {
+            <div class="sum-item">
+              <div class="sum-item__icon" aria-hidden="true"></div>
+              <div class="sum-item__meta">
+                <div class="sum-item__name">{{ item.name }}</div>
+                <div class="sum-item__sub">Qty {{ item.quantity }}</div>
+              </div>
+              <div class="sum-item__amt">{{ item.unitPrice | currency:'INR':'symbol':'1.0-0' }}</div>
+            </div>
+          }
+        </div>
+
+        <div class="row"><span>Subtotal ({{ totalQty() }} items)</span><strong>{{ subtotal() | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+        <div class="row"><span>Discount</span><strong class="green">-{{ discount() | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+        <div class="row"><span>Convenience Fee</span><strong>{{ convenienceFee() | currency:'INR':'symbol':'1.0-0' }}</strong></div>
+        <div class="divider"></div>
+        <div class="total">
+          <span>Estimated Total</span>
+          <strong class="total__amt">{{ estimatedTotal() | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>

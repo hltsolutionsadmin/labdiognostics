@@ -1,0 +1,97 @@
+<section class="container page">
+  <div class="crumbs">
+    <a class="crumb" routerLink="/">Home</a>
+    <span class="sep">›</span>
+    <span class="crumb is-current">Tests</span>
+  </div>
+
+  <div class="layout">
+    <aside class="filters">
+      <div class="filters__head">
+        <div class="filters__title">Filters</div>
+        <button class="filters__clear" type="button" (click)="selectedCategory.set('All')">Clear All</button>
+      </div>
+
+      <div class="fgroup">
+        <div class="fgroup__title">Category</div>
+        <div class="fgroup__list">
+          @for (c of categories(); track c) {
+            <label class="opt">
+              <input
+                type="radio"
+                name="cat"
+                [checked]="selectedCategory() === c"
+                (change)="selectedCategory.set(c)"
+              />
+              <span class="opt__name">{{ c }}</span>
+              <span class="opt__count">({{ categoryCount(c) }})</span>
+            </label>
+          }
+        </div>
+      </div>
+
+      <div class="fgroup">
+        <div class="fgroup__title">Price Range</div>
+        <div class="muted">(UI only)</div>
+      </div>
+
+      <div class="fgroup">
+        <div class="fgroup__title">Gender</div>
+        <div class="muted">(UI only)</div>
+      </div>
+
+      <div class="fgroup">
+        <div class="fgroup__title">Fasting Required</div>
+        <div class="muted">(UI only)</div>
+      </div>
+    </aside>
+
+    <div class="content">
+      <div class="head">
+        <div>
+          <h1 class="h1">Popular Tests</h1>
+          <div class="sub">Browse tests across categories and book your preferred slot.</div>
+          <div class="count">{{ countLabel() }}</div>
+        </div>
+
+        <div class="sort">
+          <label class="sort__label">Sort By:</label>
+          <select class="sort__select" [value]="sortBy()" (change)="sortBy.set(($any($event.target).value))">
+            <option value="popularity">Popularity</option>
+            <option value="price_low">Price: Low to High</option>
+            <option value="price_high">Price: High to Low</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid">
+        @for (p of filtered(); track p.id) {
+          <app-product-card [product]="p" (addToCart)="onAdd($event)" />
+        }
+      </div>
+
+      <div class="pager">
+        <div class="pager__left">
+          <button class="pg pg--nav" type="button" aria-label="Prev">‹</button>
+          <button class="pg is-active" type="button">1</button>
+          <button class="pg" type="button">2</button>
+          <button class="pg" type="button">3</button>
+          <button class="pg" type="button">4</button>
+          <span class="dots">…</span>
+          <button class="pg" type="button">8</button>
+          <button class="pg pg--nav" type="button" aria-label="Next">›</button>
+        </div>
+
+        <div class="pager__right">
+          <span class="muted">Show</span>
+          <select class="pager__select">
+            <option>12</option>
+            <option>24</option>
+            <option>48</option>
+          </select>
+          <span class="muted">per page</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

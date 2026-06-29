@@ -1,0 +1,117 @@
+<section class="container page">
+  <div class="crumbs">
+    <a class="crumb" routerLink="/">Home</a>
+    <span class="sep">›</span>
+    <span class="crumb is-current">My Account</span>
+  </div>
+
+  @if (user() !== null) {
+    <div class="layout">
+      <aside class="side">
+        <div class="menu">
+          <a class="mitem" routerLink="/auth/profile" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }">
+            <span class="mico" aria-hidden="true">🏠</span>
+            Account Overview
+          </a>
+          <a class="mitem" routerLink="/auth/orders" routerLinkActive="is-active"><span class="mico" aria-hidden="true">🧾</span>Order History</a>
+          <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">👑</span>My Membership</a>
+          <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">📍</span>My Addresses</a>
+          <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">📅</span>My Appointments</a>
+          <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">📄</span>Reports</a>
+          <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">💾</span>Saved Packages</a>
+          <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">💳</span>Payment Methods</a>
+          <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">🔔</span>Notifications</a>
+          <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">⚙️</span>Settings</a>
+          <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">❓</span>Help & Support</a>
+        </div>
+
+        <button class="logout" type="button" (click)="logout()">
+          <span class="mico" aria-hidden="true">⎋</span>
+          Logout
+        </button>
+      </aside>
+
+      <div class="main">
+        <div class="hero">
+          <div>
+            <div class="hero__title">Welcome back, {{ user()?.name }} 👋</div>
+            <div class="hero__sub">Manage your health journey and account preferences</div>
+          </div>
+
+          <div class="avatar" aria-label="Profile">
+            <div class="avatar__img" aria-hidden="true">{{ (user()?.name ?? 'U').slice(0, 1) }}</div>
+            <button class="avatar__edit" type="button" aria-label="Edit profile">✎</button>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat__top">
+              <span class="sico" aria-hidden="true">🧾</span>
+              <div class="snum">12</div>
+            </div>
+            <div class="slabel">Orders</div>
+            <a class="slink" href="javascript:void(0)">View history</a>
+          </div>
+          <div class="stat">
+            <div class="stat__top">
+              <span class="sico" aria-hidden="true">📅</span>
+              <div class="snum">2</div>
+            </div>
+            <div class="slabel">Upcoming Appointments</div>
+            <a class="slink" href="javascript:void(0)">View appointments</a>
+          </div>
+          <div class="stat">
+            <div class="stat__top">
+              <span class="sico" aria-hidden="true">📄</span>
+              <div class="snum">18</div>
+            </div>
+            <div class="slabel">Reports</div>
+            <a class="slink" href="javascript:void(0)">View all reports</a>
+          </div>
+          <div class="stat">
+            <div class="stat__top">
+              <span class="sico" aria-hidden="true">👑</span>
+              <div class="snum">Gold</div>
+            </div>
+            <div class="slabel">Member</div>
+            <a class="slink" href="javascript:void(0)">View membership</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__head">
+            <div class="card__title">Membership Details</div>
+            <button class="ghost" type="button">View Membership Details</button>
+          </div>
+
+          <div class="card__body">
+            <div class="mem">
+              <div class="mem__badge" aria-hidden="true">👑</div>
+              <div class="mem__meta">
+                <div class="mem__line">
+                  <div class="mem__name">Gold Member</div>
+                  <span class="pill">Active</span>
+                </div>
+                <div class="mem__muted">Member ID: CLM12345678</div>
+                <div class="mem__muted">Valid till: 29 May 2026 (364 days left)</div>
+              </div>
+            </div>
+
+            <div class="perks">
+              <div class="perk"><span class="pico" aria-hidden="true">🏷️</span><div><div class="pname">Up to 50% OFF</div><div class="pmuted">Health Checkups</div></div></div>
+              <div class="perk"><span class="pico" aria-hidden="true">⭐</span><div><div class="pname">Priority</div><div class="pmuted">Home Collection</div></div></div>
+              <div class="perk"><span class="pico" aria-hidden="true">🧑‍⚕️</span><div><div class="pname">Free</div><div class="pmuted">Health Consultation</div></div></div>
+              <div class="perk"><span class="pico" aria-hidden="true">🎁</span><div><div class="pname">Exclusive</div><div class="pmuted">Member Offers</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="panel">
+      <p class="muted">You are not logged in.</p>
+      <a class="btn" routerLink="/auth/login">Login</a>
+    </div>
+  }
+</section>

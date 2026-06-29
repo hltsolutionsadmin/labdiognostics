@@ -1,0 +1,223 @@
+<section class="container page">
+  @if (product(); as p) {
+    @if (isPackage()) {
+      <div class="crumbs">
+        <a class="crumb" routerLink="/">Home</a>
+        <span class="sep">›</span>
+        <a class="crumb" routerLink="/packages">Packages</a>
+        <span class="sep">›</span>
+        <span class="crumb is-current">{{ p.name }}</span>
+      </div>
+
+      <div class="layout">
+        <div class="left">
+          <div class="hero">
+            <div class="hero__icon" aria-hidden="true">
+              <img src="/assets/icons/report.svg" alt="" />
+            </div>
+
+            <div class="hero__meta">
+              <div class="hero__title">{{ p.name }}</div>
+              <div class="hero__sub">Comprehensive checkup for overall well-being</div>
+
+              <div class="hero__chips">
+                <div class="chip">
+                  <span class="dot" aria-hidden="true"></span>
+                  {{ includedCountLabel() }}
+                </div>
+                <div class="chip">
+                  <span class="dot" aria-hidden="true"></span>
+                  Reports in 24 - 48 hrs
+                </div>
+                <div class="chip">
+                  <span class="dot" aria-hidden="true"></span>
+                  Home Sample Collection
+                </div>
+              </div>
+            </div>
+
+            <button class="wish" type="button" aria-label="Add to wishlist">
+              <span aria-hidden="true">♡</span>
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card__head">
+              <div class="card__title">Package Overview</div>
+            </div>
+            <div class="card__body">
+              <div class="para">
+                A complete health evaluation that helps detect potential health risks and ensures you stay on top of your overall well-being.
+              </div>
+
+              <div class="highlights">
+                <div class="hitem">
+                  <span class="hicon" aria-hidden="true">✓</span>
+                  <span class="htext">80+ Tests</span>
+                </div>
+                <div class="hitem">
+                  <span class="hicon" aria-hidden="true">✓</span>
+                  <span class="htext">Trusted Labs</span>
+                </div>
+                <div class="hitem">
+                  <span class="hicon" aria-hidden="true">✓</span>
+                  <span class="htext">Accurate Reports</span>
+                </div>
+                <div class="hitem">
+                  <span class="hicon" aria-hidden="true">✓</span>
+                  <span class="htext">Expert Reviewed</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__head testsHead">
+              <div>
+                <div class="card__title">Tests Included (80+)</div>
+                <div class="muted">Search tests in this package</div>
+              </div>
+              <button class="dl" type="button">Download Test List</button>
+            </div>
+
+            <div class="card__body">
+              <input class="search" type="text" placeholder="Search tests in this package" />
+
+              <div class="acc">
+                @for (g of testGroups(); track g.name) {
+                  <div class="acc__item">
+                    <button class="acc__btn" type="button" (click)="toggleGroup(g.name)">
+                      <span class="acc__name">{{ g.name }}</span>
+                      <span class="acc__count">{{ g.countLabel }}</span>
+                      <span class="acc__chev" aria-hidden="true">▾</span>
+                    </button>
+                    @if (openGroup() === g.name) {
+                      <div class="acc__panel">
+                        <div class="plist">
+                          @for (t of g.items; track t) {
+                            <div class="pitem">{{ t }}</div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__head">
+              <div class="card__title">Who Should Take This Test?</div>
+            </div>
+            <div class="card__body">
+              <div class="bul">
+                <div class="bul__item"><span class="hicon" aria-hidden="true">✓</span> Anyone above 18 years</div>
+                <div class="bul__item"><span class="hicon" aria-hidden="true">✓</span> Yearly preventive health checkup</div>
+                <div class="bul__item"><span class="hicon" aria-hidden="true">✓</span> Individuals with a sedentary lifestyle</div>
+                <div class="bul__item"><span class="hicon" aria-hidden="true">✓</span> People with family history of chronic diseases</div>
+              </div>
+
+              <div class="prep">
+                <div class="prep__title">Preparation:</div>
+                <div class="prep__text">Fasting for 8–12 hours is recommended for accurate results.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__head">
+              <div class="card__title">Frequently Asked Questions</div>
+            </div>
+            <div class="card__body">
+              <div class="faq">
+                @for (f of faqs(); track f.q) {
+                  <div class="faq__item">
+                    <button class="faq__btn" type="button" (click)="toggleFaq(f.q)">
+                      <span class="faq__q">{{ f.q }}</span>
+                      <span class="faq__chev" aria-hidden="true">▾</span>
+                    </button>
+                    @if (openFaq() === f.q) {
+                      <div class="faq__a">{{ f.a }}</div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="right">
+          <div class="sticky">
+            <div class="priceCard">
+              <div class="priceCard__title">Package Price</div>
+
+              <div class="priceRow">
+                <div class="now">{{ p.price | currency:'INR':'symbol':'1.0-0' }}</div>
+                @if (p.originalPrice) {
+                  <div class="was">{{ p.originalPrice | currency:'INR':'symbol':'1.0-0' }}</div>
+                }
+                @if (discountPercent() > 0) {
+                  <div class="off">{{ discountPercent() }}% OFF</div>
+                }
+              </div>
+
+              @if (youSave() > 0) {
+                <div class="save">You save {{ youSave() | currency:'INR':'symbol':'1.0-0' }} on this package</div>
+              }
+
+              <button class="cta" type="button" (click)="onAddToCart()">Add to Cart</button>
+              <button class="cta cta--ghost" type="button" (click)="onBookNow()">Book Now</button>
+
+              <div class="mini">
+                <div class="mini__item">100% Secure Payments</div>
+                <div class="mini__item">Easy Reschedule & Cancel</div>
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box__title">Price Breakdown</div>
+              <div class="kv">
+                <div class="kv__row">
+                  <div class="k">Actual Price</div>
+                  <div class="v">{{ (p.originalPrice ?? p.price) | currency:'INR':'symbol':'1.0-0' }}</div>
+                </div>
+                <div class="kv__row">
+                  <div class="k">Discount</div>
+                  <div class="v v--pos">{{ youSave() | currency:'INR':'symbol':'1.0-0' }}</div>
+                </div>
+                <div class="kv__row kv__row--strong">
+                  <div class="k">Package Price</div>
+                  <div class="v v--strong">{{ p.price | currency:'INR':'symbol':'1.0-0' }}</div>
+                </div>
+                <div class="muted">(Inclusive of all taxes)</div>
+              </div>
+            </div>
+
+            <div class="box why">
+              <div class="box__title">Why Choose CareLab?</div>
+              <div class="why__list">
+                <div class="why__item"><span class="hicon" aria-hidden="true">✓</span> NABL Accredited Labs</div>
+                <div class="why__item"><span class="hicon" aria-hidden="true">✓</span> Trusted by 10,000+ Customers</div>
+                <div class="why__item"><span class="hicon" aria-hidden="true">✓</span> Accurate & Timely Reports</div>
+                <div class="why__item"><span class="hicon" aria-hidden="true">✓</span> Home Sample Collection</div>
+                <div class="why__item"><span class="hicon" aria-hidden="true">✓</span> Secure & Confidential</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    } @else {
+      <div class="notFound">
+        <div class="notFound__title">Package not available</div>
+        <div class="notFound__sub">This details page is available only for package products.</div>
+        <a class="back" routerLink="/packages">Back to Packages</a>
+      </div>
+    }
+  } @else {
+    <div class="notFound">
+      <div class="notFound__title">Loading…</div>
+      <div class="notFound__sub">Fetching package details.</div>
+    </div>
+  }
+</section>
