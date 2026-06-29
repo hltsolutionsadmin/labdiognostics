@@ -1,0 +1,122 @@
+<section class="container">
+  <div class="top">
+    <a class="back" routerLink="/products" aria-label="Back to home">←</a>
+    <div class="top__meta">
+      <h1 class="title">My Cart</h1>
+      <div class="subtitle">Review your items and book your tests</div>
+    </div>
+  </div>
+
+  @if (hasItems()) {
+    <div class="layout">
+      <div class="left">
+        <div class="card">
+          @for (item of items(); track item.productId) {
+            <div class="item">
+              <div class="item__icon" aria-hidden="true"></div>
+              <div class="item__meta">
+                <div class="item__name">{{ item.name }}</div>
+                <div class="item__desc">Includes 80+ Tests</div>
+                <div class="item__details">
+                  <span class="dot">•</span>
+                  <span>Home Collection</span>
+                  <span class="dot">•</span>
+                  <span>Tomorrow, 29 May 2025</span>
+                </div>
+              </div>
+
+              <div class="qty" aria-label="Quantity">
+                <button class="qty__btn" type="button" (click)="dec(item.productId, item.quantity)">−</button>
+                <span class="qty__val">{{ item.quantity }}</span>
+                <button class="qty__btn" type="button" (click)="inc(item.productId, item.quantity)">+</button>
+              </div>
+
+              <div class="item__price">
+                <div class="p1">{{ item.unitPrice | currency:'INR':'symbol':'1.0-0' }}</div>
+                <div class="p2">{{ (item.unitPrice + 1000) | currency:'INR':'symbol':'1.0-0' }}</div>
+                <div class="off">40% OFF</div>
+              </div>
+
+              <button class="trash" type="button" aria-label="Remove" (click)="remove(item.productId)">
+                <img src="assets/icons/trash.svg" alt="" aria-hidden="true" />
+              </button>
+            </div>
+          }
+        </div>
+
+        <div class="coupon">
+          <div class="coupon__label">Have a coupon code?</div>
+          <div class="coupon__row">
+            <input class="coupon__input" type="text" placeholder="Enter coupon code" />
+            <button class="coupon__btn" type="button">Apply</button>
+          </div>
+        </div>
+
+        <div class="help">
+          <div class="help__left">
+            <div class="help__title">Need Help?</div>
+            <div class="help__sub">We’re here to assist you</div>
+          </div>
+          <div class="help__actions">
+            <a class="help__link" href="tel:+919876543210">+91 98765 43210</a>
+            <a class="help__link" href="#">Chat with us</a>
+          </div>
+        </div>
+      </div>
+
+      <aside class="right">
+        <div class="summary">
+          <div class="summary__title">Order Summary</div>
+
+          <div class="sumrow">
+            <span>Subtotal ({{ totalQty() }} items)</span>
+            <strong>{{ subtotal() | currency:'INR':'symbol':'1.0-0' }}</strong>
+          </div>
+          <div class="sumrow sumrow--green">
+            <span>Discount</span>
+            <strong>-{{ discount() | currency:'INR':'symbol':'1.0-0' }}</strong>
+          </div>
+          <div class="sumrow">
+            <span>Convenience Fee</span>
+            <strong>{{ convenienceFee() | currency:'INR':'symbol':'1.0-0' }}</strong>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="totalrow">
+            <div>
+              <div class="totalrow__label">Estimated Total</div>
+              <div class="totalrow__sub">You will choose the date & time at the next step</div>
+            </div>
+            <div class="totalrow__amt">{{ estimatedTotal() | currency:'INR':'symbol':'1.0-0' }}</div>
+          </div>
+
+          <div class="perks">
+            <div class="perk">
+              <div class="perk__title">Secure Payments</div>
+              <div class="perk__sub">100% Protected</div>
+            </div>
+            <div class="perk">
+              <div class="perk__title">NABL Accredited</div>
+              <div class="perk__sub">Trusted Labs</div>
+            </div>
+            <div class="perk">
+              <div class="perk__title">Easy Booking</div>
+              <div class="perk__sub">Quick & Easy</div>
+            </div>
+          </div>
+
+          <a class="checkout" routerLink="/checkout">
+            Proceed to Checkout <span class="arrow">→</span>
+          </a>
+          <div class="secure">100% Secure Payments</div>
+        </div>
+      </aside>
+    </div>
+  } @else {
+    <div class="empty">
+      <h2>Your cart is empty</h2>
+      <a class="btn" routerLink="/products">Browse packages</a>
+    </div>
+  }
+</section>

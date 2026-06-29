@@ -1,0 +1,144 @@
+<section class="container page">
+  <div class="crumbs">
+    <a class="crumb" routerLink="/">Home</a>
+    <span class="sep">›</span>
+    <a class="crumb" routerLink="/auth/profile">My Account</a>
+    <span class="sep">›</span>
+    <span class="crumb is-current">Order History</span>
+  </div>
+
+  <div class="layout">
+    <aside class="side">
+      <div class="menu">
+        <a class="mitem" routerLink="/auth/profile" routerLinkActive="is-active">
+          <span class="mico" aria-hidden="true">🏠</span>
+          Account Overview
+        </a>
+        <a class="mitem" routerLink="/auth/orders" routerLinkActive="is-active">
+          <span class="mico" aria-hidden="true">🧾</span>
+          Order History
+        </a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">👑</span>My Membership</a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">📍</span>My Addresses</a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">📅</span>My Appointments</a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">📄</span>Reports</a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">💾</span>Saved Packages</a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">💳</span>Payment Methods</a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">🔔</span>Notifications</a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">⚙️</span>Settings</a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">❓</span>Help & Support</a>
+      </div>
+
+      <div class="logout">
+        <span class="mico" aria-hidden="true">⎋</span>
+        Logout
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="head">
+        <div>
+          <div class="title">Order History</div>
+          <div class="sub">Track and view all your test orders and their status</div>
+        </div>
+
+        <button class="download" type="button">
+          <span class="dico" aria-hidden="true">⤓</span>
+          Download Orders
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="filters">
+          <div class="searchWrap">
+            <span class="sico" aria-hidden="true">🔎</span>
+            <input class="search" type="text" placeholder="Search by Order ID" />
+          </div>
+
+          <select class="select" aria-label="All Statuses">
+            <option>All Statuses</option>
+            <option>Completed</option>
+            <option>Processing</option>
+            <option>Cancelled</option>
+            <option>Sample Collected</option>
+          </select>
+
+          <button class="select" type="button">
+            <span class="cal" aria-hidden="true">📅</span>
+            Select Date Range
+          </button>
+        </div>
+
+        <div class="table">
+          <div class="thead">
+            <div>Order ID</div>
+            <div>Date & Time</div>
+            <div>Amount</div>
+            <div>Status</div>
+            <div>Payment Mode</div>
+            <div>Action</div>
+          </div>
+
+          @for (r of rows; track r.id) {
+            <div class="trow">
+              <div class="oid">{{ r.id }}</div>
+              <div class="dt">
+                <div class="dt__d">{{ r.dateText }}</div>
+                <div class="dt__t">{{ r.timeText }}</div>
+              </div>
+              <div class="amt">
+                <div class="amt__now">{{ r.amount | currency:'INR':'symbol':'1.0-0' }}</div>
+                @if (r.mrp) {
+                  <div class="amt__mrp">{{ r.mrp | currency:'INR':'symbol':'1.0-0' }}</div>
+                }
+              </div>
+              <div>
+                <span [class]="statusClass(r.status)">● {{ r.status }}</span>
+              </div>
+              <div class="pay">
+                <div class="pay__m">{{ r.paymentMode }}</div>
+                <div class="pay__s">{{ r.paymentState }}</div>
+              </div>
+              <div class="act">
+                <button class="btn" type="button">{{ r.actionLabel }}</button>
+                <button class="dots" type="button" aria-label="More">⋮</button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="foot">
+          <div class="show">{{ showingLabel() }}</div>
+
+          <div class="pager">
+            <button class="pg" type="button" aria-label="Prev">‹</button>
+            <button class="pg is-active" type="button">1</button>
+            <button class="pg" type="button">2</button>
+            <button class="pg" type="button">3</button>
+            <button class="pg" type="button">4</button>
+            <span class="dots2">…</span>
+            <button class="pg" type="button">6</button>
+            <button class="pg" type="button" aria-label="Next">›</button>
+          </div>
+
+          <div class="perPage">
+            <span class="muted">Show</span>
+            <select class="perSelect" aria-label="Per page">
+              <option>7</option>
+              <option>10</option>
+              <option>20</option>
+            </select>
+            <span class="muted">per page</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="trust">
+        <div class="titem"><span class="tico" aria-hidden="true">🛡️</span><div><div class="tt">Accurate Reports</div><div class="ts">100% Reliable Results</div></div></div>
+        <div class="titem"><span class="tico" aria-hidden="true">🏠</span><div><div class="tt">Home Sample Collection</div><div class="ts">Safe & Convenient</div></div></div>
+        <div class="titem"><span class="tico" aria-hidden="true">⏱</span><div><div class="tt">Timely Reports</div><div class="ts">Reports on time, every time</div></div></div>
+        <div class="titem"><span class="tico" aria-hidden="true">🔒</span><div><div class="tt">Secure & Confidential</div><div class="ts">Your data is always protected</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>

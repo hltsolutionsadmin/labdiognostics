@@ -1,0 +1,142 @@
+<section class="container">
+  <div class="auth">
+    <div class="auth__shell">
+      <div class="left">
+        <div class="badge">Trusted by 10L+ Customers</div>
+        <h1 class="hero">
+          Accurate Reports.<br />
+          <span class="hero__accent">Better Health.</span>
+        </h1>
+        <p class="desc">
+          Book lab tests and health checkup packages with ease.<br />
+          Trusted by thousands for precise diagnostics and exceptional care.
+        </p>
+
+        <div class="mini">
+          <div class="mini__item">
+            <div class="mini__icon"></div>
+            <div class="mini__text">NABL Accredited Labs</div>
+          </div>
+          <div class="mini__item">
+            <div class="mini__icon"></div>
+            <div class="mini__text">Accurate Reports</div>
+          </div>
+          <div class="mini__item">
+            <div class="mini__icon"></div>
+            <div class="mini__text">Home Sample Collection</div>
+          </div>
+          <div class="mini__item">
+            <div class="mini__icon"></div>
+            <div class="mini__text">Safe, Secure & Confidential</div>
+          </div>
+        </div>
+
+        <div class="lab">
+          <div class="lab__img" role="img" aria-label="Lab technician"></div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="card">
+          <div class="card__head">
+            <div class="card__title">Welcome Back</div>
+            <div class="card__sub">Login to your account to continue</div>
+          </div>
+
+          <div class="modes" role="tablist" aria-label="Login mode">
+            <button
+              class="mode"
+              type="button"
+              [class.is-active]="loginMode() === 'email'"
+              (click)="loginMode.set('email')"
+            >
+              Email / Mobile
+            </button>
+            <button
+              class="mode"
+              type="button"
+              [class.is-active]="loginMode() === 'otp'"
+              (click)="loginMode.set('otp')"
+            >
+              Continue with OTP
+            </button>
+          </div>
+
+          <form class="form" (ngSubmit)="submit()" [formGroup]="form">
+            <label class="field">
+              <span class="label">Email or Mobile Number</span>
+              <div class="control">
+                <input
+                  type="text"
+                  formControlName="emailOrMobile"
+                  placeholder="Enter your email or mobile number"
+                  autocomplete="username"
+                />
+              </div>
+            </label>
+
+            <label class="field">
+              <span class="label">Password</span>
+              <div class="control">
+                <input
+                  type="password"
+                  formControlName="password"
+                  placeholder="Enter your password"
+                  autocomplete="current-password"
+                />
+              </div>
+            </label>
+
+            <div class="row">
+              <label class="check">
+                <input type="checkbox" formControlName="remember" />
+                <span>Remember me</span>
+              </label>
+              <a class="link" href="#">Forgot Password?</a>
+            </div>
+
+            @if (form.controls.emailOrMobile.touched && form.controls.emailOrMobile.invalid) {
+              <div class="error">Please enter your email or mobile number.</div>
+            }
+            @if (loginMode() === 'email' && form.controls.password.touched && form.controls.password.invalid) {
+              <div class="error">Please enter your password.</div>
+            }
+
+            <button class="submit" type="submit" [disabled]="isSubmitting()">
+              Login <span class="arrow">→</span>
+            </button>
+
+            <div class="or">or continue with</div>
+            <div class="social">
+              <button type="button" class="social__btn">Google</button>
+              <button type="button" class="social__btn">Apple</button>
+            </div>
+
+            <div class="foot">
+              Don’t have an account? <a class="link" href="#">Register Now</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="strip">
+      <div class="strip__item">
+        <div class="strip__title">Secure Payments</div>
+        <div class="strip__sub">100% Protected</div>
+      </div>
+      <div class="strip__item">
+        <div class="strip__title">NABL Accredited</div>
+        <div class="strip__sub">Trusted Labs</div>
+      </div>
+      <div class="strip__item">
+        <div class="strip__title">Easy Booking</div>
+        <div class="strip__sub">Quick & Easy</div>
+      </div>
+      <div class="strip__item">
+        <div class="strip__title">Dedicated Support</div>
+        <div class="strip__sub">24x7 Customer Care</div>
+      </div>
+    </div>
+  </div>
+</section>

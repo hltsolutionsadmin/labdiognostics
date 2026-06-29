@@ -1,0 +1,45 @@
+<div class="app-shell">
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="brand" routerLink="/">
+        <img class="brand__img" src="/assets/icons/logo.svg" alt="CareLab Diagnostics" />
+        <span class="brand__stack">
+          <span class="brand__title">CareLab</span>
+          <span class="brand__tag">Precise Reports, Better Health</span>
+        </span>
+      </a>
+
+      <nav class="nav">
+        <a class="nav__link" routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+        <a class="nav__link" routerLink="/packages" routerLinkActive="is-active">Packages</a>
+        <a class="nav__link" routerLink="/tests" routerLinkActive="is-active">Tests</a>
+        <a class="nav__link" routerLink="/products" routerLinkActive="is-active">Health Checkups</a>
+        <a class="nav__link" routerLink="/reports">Membership</a>
+      </nav>
+
+      <div class="actions">
+        <button class="action" type="button" aria-label="Notifications">
+          <img class="action__icon" src="/assets/icons/notification.svg" alt="" aria-hidden="true" />
+        </button>
+        <a class="action" routerLink="/cart" aria-label="Cart">
+          <img class="action__icon" src="/assets/icons/cart.svg" alt="" aria-hidden="true" />
+          @if (cartCount() > 0) {
+            <span class="badge">{{ cartCount() }}</span>
+          }
+        </a>
+        @if (isAuthed()) {
+          <a class="action action--ghost account" routerLink="/auth/profile" aria-label="Account">
+            <span class="account__icon" aria-hidden="true">👤</span>
+            <span class="account__name">{{ user()?.name }}</span>
+          </a>
+        } @else {
+          <a class="action action--ghost" routerLink="/auth/login">Login / Register</a>
+        }
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <router-outlet />
+  </main>
+</div>
