@@ -1,0 +1,15 @@
+:host { display: block; }
+
+/* Keep styling consistent with login page */
+@import './login-page.component.scss';
+
+.success {
+  background: #ecfdf5;
+  border: 1px solid #86efac;
+  color: #166534;
+  border-radius: var(--r-sm);
+  padding: .65rem .85rem;
+  font-size: .83rem;
+  font-weight: 700;
+}
+
