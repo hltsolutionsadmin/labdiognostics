@@ -1,0 +1,88 @@
+<section class="container page">
+  <div class="auth">
+    <div class="auth__shell">
+      <div class="left">
+        <div class="badge">Email Verification</div>
+        <h1 class="hero">
+          Enter OTP<br />
+          <span class="hero__accent">to Verify</span>
+        </h1>
+        <p class="desc">We’ve sent a verification code to your email address.</p>
+
+        <div class="lab">
+          <div class="lab__img" role="img" aria-label="OTP verification"></div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="card">
+          <div class="card__head">
+            <div class="card__title">Verify OTP</div>
+            <div class="card__sub">Enter the OTP sent to your email</div>
+          </div>
+
+          <form class="form" (ngSubmit)="submit()" [formGroup]="form">
+            <label class="field">
+              <span class="label">OTP</span>
+              <div class="control">
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  formControlName="otp"
+                  placeholder="Enter OTP"
+                  autocomplete="one-time-code"
+                />
+              </div>
+              @if (form.controls.otp.touched && form.controls.otp.invalid) {
+                <div class="error">Enter a valid OTP.</div>
+              }
+            </label>
+
+            <!-- OTP sending is handled automatically by backend after registration -->
+            <div class="row" style="gap: .75rem;">
+              <div class="muted" style="font-size: .85rem; color: var(--muted); font-weight: 600;">
+                Enter the OTP sent to your email.
+              </div>
+            </div>
+
+            @if (errorMessage()) {
+              <div class="error">{{ errorMessage() }}</div>
+            }
+
+            @if (successMessage()) {
+              <div class="success">{{ successMessage() }}</div>
+            }
+
+            <button class="submit" type="submit" [disabled]="form.invalid || isSubmitting()">
+              {{ isSubmitting() ? 'Verifying...' : 'Verify' }} <span class="arrow">→</span>
+            </button>
+
+            <div class="foot">
+              <a class="link" routerLink="/auth/register">Back to registration</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="strip">
+      <div class="strip__item">
+        <div class="strip__title">Secure</div>
+        <div class="strip__sub">Protected</div>
+      </div>
+      <div class="strip__item">
+        <div class="strip__title">Verified</div>
+        <div class="strip__sub">OTP based</div>
+      </div>
+      <div class="strip__item">
+        <div class="strip__title">Fast</div>
+        <div class="strip__sub">Quick verification</div>
+      </div>
+      <div class="strip__item">
+        <div class="strip__title">Support</div>
+        <div class="strip__sub">Always available</div>
+      </div>
+    </div>
+  </div>
+</section>
+

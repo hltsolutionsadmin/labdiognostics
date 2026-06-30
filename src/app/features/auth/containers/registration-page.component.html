@@ -1,0 +1,162 @@
+<section class="container page">
+  <div class="auth">
+    <div class="auth__shell">
+      <div class="left">
+        <div class="badge">Trusted by 10L+ Customers</div>
+        <h1 class="hero">
+          Create your<br />
+          <span class="hero__accent">Account</span>
+        </h1>
+        <p class="desc">
+          Register to book lab tests and health checkup packages with ease.
+        </p>
+
+        <div class="mini">
+          <div class="mini__item">
+            <div class="mini__icon"></div>
+            <div class="mini__text">Secure & Verified</div>
+          </div>
+          <div class="mini__item">
+            <div class="mini__icon"></div>
+            <div class="mini__text">Fast Booking</div>
+          </div>
+          <div class="mini__item">
+            <div class="mini__icon"></div>
+            <div class="mini__text">Accurate Reports</div>
+          </div>
+          <div class="mini__item">
+            <div class="mini__icon"></div>
+            <div class="mini__text">Dedicated Support</div>
+          </div>
+        </div>
+
+        <div class="lab">
+          <div class="lab__img" role="img" aria-label="Secure registration"></div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="card">
+          <div class="card__head">
+            <div class="card__title">Register</div>
+            <div class="card__sub">Fill in your details to create an account</div>
+          </div>
+
+          <form class="form" (ngSubmit)="submit()" [formGroup]="form">
+            <label class="field">
+              <span class="label">First Name</span>
+              <div class="control">
+                <input
+                  type="text"
+                  formControlName="firstName"
+                  placeholder="Enter your first name"
+                  autocomplete="given-name"
+                />
+              </div>
+              @if (form.controls.firstName.touched && form.controls.firstName.invalid) {
+                <div class="error">First name is required.</div>
+              }
+            </label>
+
+            <label class="field">
+              <span class="label">Last Name</span>
+              <div class="control">
+                <input
+                  type="text"
+                  formControlName="lastName"
+                  placeholder="Enter your last name"
+                  autocomplete="family-name"
+                />
+              </div>
+              @if (form.controls.lastName.touched && form.controls.lastName.invalid) {
+                <div class="error">Last name is required.</div>
+              }
+            </label>
+
+            <label class="field">
+              <span class="label">Email</span>
+              <div class="control">
+                <input
+                  type="email"
+                  formControlName="email"
+                  placeholder="Enter your email"
+                  autocomplete="email"
+                />
+              </div>
+              @if (form.controls.email.touched && form.controls.email.invalid) {
+                <div class="error">Please enter a valid email address.</div>
+              }
+            </label>
+
+            <label class="field">
+              <span class="label">Contact Number</span>
+              <div class="control">
+                <input
+                  type="text"
+                  formControlName="mobile"
+                  placeholder="Enter 10-digit contact number"
+                  inputmode="numeric"
+                  autocomplete="tel"
+                />
+              </div>
+              @if (form.controls.mobile.touched && form.controls.mobile.invalid) {
+                <div class="error">Contact number must be exactly 10 digits.</div>
+              }
+            </label>
+
+            <label class="field">
+              <span class="label">Password</span>
+              <div class="control">
+                <input
+                  type="password"
+                  formControlName="password"
+                  placeholder="Enter your password"
+                  autocomplete="new-password"
+                />
+              </div>
+              @if (form.controls.password.touched && form.controls.password.invalid) {
+                <div class="error">Password must be at least 8 characters.</div>
+              }
+            </label>
+
+            @if (errorMessage()) {
+              <div class="error">{{ errorMessage() }}</div>
+            }
+
+            @if (successMessage()) {
+              <div class="success">{{ successMessage() }}</div>
+            }
+
+            <button class="submit" type="submit" [disabled]="form.invalid || isSubmitting()">
+              {{ isSubmitting() ? 'Registering...' : 'Register' }} <span class="arrow">→</span>
+            </button>
+
+            <div class="foot">
+              Already have an account? <a class="link" routerLink="/auth/login">Login</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="strip">
+      <div class="strip__item">
+        <div class="strip__title">Secure Payments</div>
+        <div class="strip__sub">100% Protected</div>
+      </div>
+      <div class="strip__item">
+        <div class="strip__title">NABL Accredited</div>
+        <div class="strip__sub">Trusted Labs</div>
+      </div>
+      <div class="strip__item">
+        <div class="strip__title">Easy Booking</div>
+        <div class="strip__sub">Quick & Easy</div>
+      </div>
+      <div class="strip__item">
+        <div class="strip__title">Dedicated Support</div>
+        <div class="strip__sub">24x7 Customer Care</div>
+      </div>
+    </div>
+  </div>
+</section>
+
