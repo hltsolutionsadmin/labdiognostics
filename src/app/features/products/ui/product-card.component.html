@@ -12,10 +12,19 @@
     <div class="card__divider"></div>
 
     <div class="card__price">
-      <strong class="price">{{ product.price | currency:'INR':'symbol':'1.0-0' }}</strong>
-      @if (product.originalPrice) {
+      <strong class="price">
+        @if (typeof product.price === 'number') {
+          {{ product.price | currency:'INR':'symbol':'1.0-0' }}
+        } @else {
+          <!-- defensive: avoids CurrencyPipe crash when backend returns non-number -->
+          —
+        }
+      </strong>
+
+      @if (typeof product.originalPrice === 'number' && product.originalPrice) {
         <span class="mrp">{{ product.originalPrice | currency:'INR':'symbol':'1.0-0' }}</span>
       }
+
       @if (product.badges?.length) {
         <span class="chip">{{ product.badges?.[0] }}</span>
       }
@@ -29,3 +38,4 @@
     </button>
   </div>
 </article>
+
