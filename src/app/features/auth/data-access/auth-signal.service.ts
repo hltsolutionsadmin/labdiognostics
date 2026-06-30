@@ -4,6 +4,7 @@ import { Observable, map, switchMap, tap } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 import { User } from '../../../shared/types';
+import { CartSignalService } from '../../cart/data-access/cart-signal.service';
 
 const STORAGE_KEY = 'lab.user.v1';
 
@@ -30,6 +31,8 @@ export class AuthSignalService {
 
   // Token storage (used by AuthTokenInterceptor)
   private readonly tokenStorageKey = 'lab.auth.tokens.v1';
+
+  private readonly cart = inject(CartSignalService);
 
   accessToken(): string | null {
     const raw = localStorage.getItem(this.tokenStorageKey);
@@ -100,6 +103,9 @@ export class AuthSignalService {
         tap((me) => {
           const user = this.safeLoadUser(me);
           this._user.set(user);
+          // Initialize cart after successful login
+          console.debug('[Auth] User logged in, initializing cart');
+          this.cart.initializeCart().subscribe();
         }),
         map(() => undefined)
       );
@@ -108,6 +114,9 @@ export class AuthSignalService {
   logout(): void {
     this._user.set(null);
     localStorage.removeItem(this.tokenStorageKey);
+    // Clear cart on logout
+    console.debug('[Auth] User logged out, clearing cart');
+    this.cart.clearCart();
   }
 }
 

@@ -17,13 +17,14 @@ export class CartPageComponent {
   readonly items = this.cart.items;
   readonly subtotal = this.cart.subtotal;
   readonly totalQty = this.cart.totalQuantity;
+  readonly grandTotal = this.cart.grandTotal;
 
   readonly hasItems = computed(() => this.items().length > 0);
 
   readonly discount = computed(() => 0);
   readonly convenienceFee = computed(() => (this.hasItems() ? 49 : 0));
   readonly estimatedTotal = computed(
-    () => this.subtotal() - this.discount() + this.convenienceFee()
+    () => this.grandTotal() > 0 ? this.grandTotal() : this.subtotal() - this.discount() + this.convenienceFee()
   );
 
   inc(productId: string, currentQty: number): void {
