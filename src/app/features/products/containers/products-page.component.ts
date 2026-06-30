@@ -64,6 +64,6 @@ export class ProductsPageComponent {
   });
 
   onAdd(product: Product): void {
-    this.cart.addProduct(product, 1);
+    this.cart.addProductFromProduct(product, 1).subscribe();
   }
 }

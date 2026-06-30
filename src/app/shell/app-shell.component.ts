@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
@@ -34,5 +34,16 @@ export class AppShellComponent {
           time: new Date().toISOString()
         });
       });
+
+    // Initialize cart when user is authenticated
+    effect(() => {
+      if (this.auth.isAuthed()) {
+        console.debug('[AppShell] User authenticated, initializing cart');
+        this.cart.initializeCart().subscribe();
+      } else {
+        console.debug('[AppShell] User not authenticated, clearing cart');
+        this.cart.clearCart();
+      }
+    });
   }
 }
