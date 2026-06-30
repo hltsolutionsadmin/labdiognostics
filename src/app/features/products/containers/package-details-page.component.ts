@@ -129,14 +129,14 @@ export class PackageDetailsPageComponent {
     const p = this.product();
     if (!p) return;
     if (p.category !== 'Packages') return;
-    this.cart.addProduct(p, 1);
+    this.cart.addProductFromProduct(p, 1).subscribe();
   }
 
   onBookNow(): void {
     const p = this.product();
     if (!p) return;
     if (p.category !== 'Packages') return;
-    this.cart.addProduct(p, 1);
+    this.cart.addProductFromProduct(p, 1).subscribe();
     void this.router.navigate(['/cart']);
   }
 }

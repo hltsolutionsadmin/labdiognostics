@@ -1,71 +1,125 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map, switchMap, tap } from 'rxjs';
+
 import { Product } from '../../../shared/types';
 import { environment } from '../../../../environments/environment';
 
+type CatalogPageResponse = {
+  content: Array<{ id: string }>;
+};
+
+type CatalogVersionResponse = {
+  id: string;
+};
+
+type ProductsResponse = {
+  content: ReadonlyArray<Product>;
+};
+
+
 @Injectable({ providedIn: 'root' })
 export class ProductsApiService {
+
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiBaseUrl;
+  private readonly storeId = environment.storeId;
 
   getProducts(): Observable<ReadonlyArray<Product>> {
-    // Placeholder: replace with real endpoint (RxJS for async API).
-    // Example: return this.http.get<ReadonlyArray<Product>>(`${this.baseUrl}/api/products`);
-    void this.http;
-    void this.baseUrl;
-    return of(MOCK_PRODUCTS).pipe(delay(200));
+    console.debug('[ProductsApiService] getProducts()');
+    return this.getProductsForOnlineCatalog();
   }
+
+  private getProductsForOnlineCatalog(): Observable<ReadonlyArray<Product>> {
+    console.debug('[ProductsApiService] getProductsForOnlineCatalog() start');
+    if (!this.storeId) {
+      return throwError(() => new Error('Missing environment.storeId'));
+    }
+
+    const baseParams = new HttpParams()
+      .set('storeId', this.storeId)
+      .set('page', '0')
+      .set('size', '10');
+
+    return this.http
+      .get<CatalogPageResponse>(`${this.baseUrl}/api/catalogs/page`, { params: baseParams })
+      .pipe(tap(() => console.debug('[ProductsApiService] catalogs/page response received')))
+      .pipe(
+        map((res) => res?.content?.[0]?.id ?? null),
+        tap((catalogId) => {
+          // Useful when debugging why the chain stops.
+          // Remove if you don't want console output.
+          console.debug('[ProductsApiService] catalogId:', catalogId);
+        }),
+        switchMap((catalogId) => {
+          if (!catalogId) return of([] as ReadonlyArray<Product>);
+
+          return this.http
+            .get<CatalogVersionResponse>(`${this.baseUrl}/api/catalogs/${catalogId}/versions/online`)
+            .pipe(
+              map((onlineVersion) => onlineVersion?.id ?? null),
+              tap((catalogVersionId) => {
+                console.debug('[ProductsApiService] catalogVersionId:', catalogVersionId);
+              }),
+              switchMap((catalogVersionId) => {
+                if (!catalogVersionId) return of([] as ReadonlyArray<Product>);
+
+                const params = new HttpParams()
+                  .set('catalogVersionId', catalogVersionId)
+                  .set('page', '0')
+                  .set('size', '10');
+
+                return this.http
+                  .get<any>(`${this.baseUrl}/api/products`, { params })
+                  .pipe(
+                    tap((productsRes) =>
+                      console.debug(
+                        '[ProductsApiService] /api/products response received, count=',
+                        productsRes?.content?.length ?? 0
+                      )
+                    ),
+                    map((productsRes): ReadonlyArray<Product> => {
+                      const content = (productsRes?.content ?? []) as Array<any>;
+
+                      // Map backend product shape -> frontend Product model
+                      // Backend example:
+                      // price: { id: '...', price: 200.0000, currency: null, ... }
+                      return content.map((p) => {
+                        const mappedPrice = p?.price?.price ?? 0;
+                        const mappedOriginalPrice = p?.originalPrice?.price ?? p?.originalPrice ?? undefined;
+
+                        return {
+                          ...p,
+                          price: mappedPrice,
+                          originalPrice: typeof mappedOriginalPrice === 'number' ? mappedOriginalPrice : undefined
+                        } as Product;
+                      });
+                    }),
+                    tap((products) => {
+                      // Temporary logging (remove after verification)
+                      console.table(
+                        products.map((p) => ({
+                          id: p.id,
+                          name: p.name,
+                          productType: (p as any).productType,
+                          mappedPrice: p.price
+                        }))
+                      );
+                    })
+                  );
+              })
+            );
+        }),
+        // Keep returning [] so UI doesn't break, but log the error.
+        catchError((err) => {
+          console.error('[ProductsApiService] getProducts flow failed:', err);
+          // Surface details for debugging stuck/empty card states.
+          return of([] as ReadonlyArray<Product>);
+        })
+      );
+  }
+
+
 }
 
-const MOCK_PRODUCTS: ReadonlyArray<Product> = [
-  {
-    id: 'p1',
-    name: 'Full Body Checkup',
-    description: 'Includes 80+ Tests',
-    imageUrl: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=900&q=60',
-    price: 1499,
-    originalPrice: 2500,
-    category: 'Packages',
-    rating: 4.8,
-    ratingCount: 1200,
-    badges: ['40% OFF']
-  },
-  {
-    id: 'p2',
-    name: 'Diabetes Profile',
-    description: 'Includes 28 Tests',
-    imageUrl: 'https://images.unsplash.com/photo-1582719478185-2d6f18b1a217?auto=format&fit=crop&w=900&q=60',
-    price: 699,
-    originalPrice: 1200,
-    category: 'Packages',
-    rating: 4.6,
-    ratingCount: 860,
-    badges: ['42% OFF']
-  },
-  {
-    id: 'p3',
-    name: 'Liver Function Test',
-    description: 'Includes 22 Tests',
-    imageUrl: 'https://images.unsplash.com/photo-1582719478171-2c6d1b6d8b0b?auto=format&fit=crop&w=900&q=60',
-    price: 599,
-    originalPrice: 1000,
-    category: 'Packages',
-    rating: 4.5,
-    ratingCount: 620,
-    badges: ['40% OFF']
-  },
-  {
-    id: 'p4',
-    name: 'Thyroid Profile',
-    description: 'Includes 13 Tests',
-    imageUrl: 'https://images.unsplash.com/photo-1582719478144-1d5b3a6a1d8a?auto=format&fit=crop&w=900&q=60',
-    price: 499,
-    originalPrice: 800,
-    category: 'Packages',
-    rating: 4.4,
-    ratingCount: 410,
-    badges: ['38% OFF']
-  }
-];

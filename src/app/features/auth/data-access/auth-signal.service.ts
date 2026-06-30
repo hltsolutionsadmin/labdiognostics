@@ -1,9 +1,10 @@
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { tap } from 'rxjs';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Observable, map, switchMap, tap } from 'rxjs';
 
-import { environment } from '../../../../environments/environment.local';
+import { environment } from '../../../../environments/environment';
 import { User } from '../../../shared/types';
+import { CartSignalService } from '../../cart/data-access/cart-signal.service';
 
 const STORAGE_KEY = 'lab.user.v1';
 const PENDING_VERIFICATION_KEY = 'lab.pendingVerification.v1';
@@ -99,6 +100,45 @@ export class AuthSignalService {
   readonly user = this._user.asReadonly();
   readonly isAuthed = computed(() => this._user() !== null);
 
+  // Token storage (used by AuthTokenInterceptor)
+  private readonly tokenStorageKey = 'lab.auth.tokens.v1';
+
+  private readonly cart = inject(CartSignalService);
+
+  accessToken(): string | null {
+    const raw = localStorage.getItem(this.tokenStorageKey);
+    if (!raw) return null;
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return null;
+      const o = parsed as Record<string, unknown>;
+      return typeof o['accessToken'] === 'string' ? o['accessToken'] : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private readonly http = inject(HttpClient);
+  private readonly apiBaseUrl = environment.apiBaseUrl;
+
+  private persistTokens(tokens: {
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+    tokenType: string;
+  }): void {
+    localStorage.setItem(this.tokenStorageKey, JSON.stringify(tokens));
+  }
+
+  private readonly safeLoadUser = (raw: unknown): User => {
+    const o = raw as Record<string, unknown>;
+    return {
+      id: typeof o['id'] === 'string' ? o['id'] : '',
+      name: typeof o['name'] === 'string' ? o['name'] : '',
+      email: typeof o['email'] === 'string' ? o['email'] : ''
+    };
+  };
+
   constructor() {
     effect(() => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this._user()));
@@ -150,5 +190,10 @@ export class AuthSignalService {
 
   logout(): void {
     this._user.set(null);
+    localStorage.removeItem(this.tokenStorageKey);
+    // Clear cart on logout
+    console.debug('[Auth] User logged out, clearing cart');
+    this.cart.clearCart();
   }
 }
+

@@ -5,6 +5,7 @@ import { ProductsApiService } from '../data-access/products-api.service';
 import { Product } from '../../../shared/types';
 import { ProductCardComponent } from '../ui/product-card.component';
 import { CartSignalService } from '../../cart/data-access/cart-signal.service';
+import { tap } from 'rxjs';
 
 @Component({
   selector: 'app-packages-page',
@@ -15,6 +16,8 @@ import { CartSignalService } from '../../cart/data-access/cart-signal.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PackagesPageComponent {
+  private readonly _instanceId = crypto.randomUUID();
+
   private readonly api = inject(ProductsApiService);
   private readonly cart = inject(CartSignalService);
   private readonly router = inject(Router);
@@ -23,9 +26,35 @@ export class PackagesPageComponent {
   readonly sortBy = signal<'popularity' | 'price_low' | 'price_high'>('popularity');
 
   private readonly products$ = this.api.getProducts();
-  readonly products = toSignal(this.products$, { initialValue: [] as ReadonlyArray<Product> });
+  private readonly _productsDebug$ = this.products$.pipe(
+    tap((arr) => {
+      console.debug('[PackagesPageComponent] products$ next', {
+        instanceId: this._instanceId,
+        len: arr.length,
+        time: new Date().toISOString(),
+        firstId: arr[0]?.id
+      });
+    }),
+    tap({
+      complete: () =>
+        console.debug('[PackagesPageComponent] products$ complete', {
+          instanceId: this._instanceId,
+          time: new Date().toISOString()
+        })
+    })
+  );
+
+  readonly products = toSignal(this._productsDebug$, {
+    initialValue: [] as ReadonlyArray<Product>
+  });
 
   readonly categories = computed(() => {
+    console.debug('[PackagesPageComponent] categories() recompute', {
+      instanceId: this._instanceId,
+      time: new Date().toISOString(),
+      productsLen: this.products().length
+    });
+
     const map = new Map<string, number>();
     for (const p of this.products()) map.set(p.category, (map.get(p.category) ?? 0) + 1);
     const items = Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
@@ -33,8 +62,15 @@ export class PackagesPageComponent {
   });
 
   readonly filtered = computed(() => {
+    const products = this.products();
+
+    // Backend returns a mixed list (Tests + Bundles). Packages page must show ONLY bundles.
+    const bundleProducts = products.filter((p: any) => p.productType === 'BUNDLE');
+
+
+
     const cat = this.selectedCategory();
-    let list = this.products();
+    let list = bundleProducts;
     if (cat !== 'All') list = list.filter((p) => p.category === cat);
 
     const sort = this.sortBy();
@@ -57,7 +93,7 @@ export class PackagesPageComponent {
   }
 
   onAdd(product: Product): void {
-    this.cart.addProduct(product, 1);
+    this.cart.addProductFromProduct(product, 1).subscribe();
   }
 
   onView(product: Product): void {
@@ -65,3 +101,4 @@ export class PackagesPageComponent {
     void this.router.navigate(['/packages', product.id]);
   }
 }
+

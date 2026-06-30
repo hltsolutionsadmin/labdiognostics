@@ -22,6 +22,7 @@ export class CheckoutPageComponent {
   readonly items = this.cart.items;
   readonly subtotal = this.cart.subtotal;
   readonly totalQty = this.cart.totalQuantity;
+  readonly grandTotal = this.cart.grandTotal;
   readonly isSubmitting = signal(false);
   readonly step = signal<0 | 1 | 2 | 3>(0);
   readonly showAddAddress = signal(false);
@@ -51,7 +52,7 @@ export class CheckoutPageComponent {
   readonly discount = computed(() => 0);
   readonly convenienceFee = computed(() => (this.totalQty() > 0 ? 49 : 0));
   readonly estimatedTotal = computed(
-    () => this.subtotal() - this.discount() + this.convenienceFee()
+    () => this.grandTotal() > 0 ? this.grandTotal() : this.subtotal() - this.discount() + this.convenienceFee()
   );
 
   readonly form = new FormGroup({
@@ -259,7 +260,7 @@ export class CheckoutPageComponent {
 
     charge$.subscribe({
       next: () => {
-        this.cart.clear();
+        this.cart.clearCart();
         this.isSubmitting.set(false);
         this.router.navigate(['/checkout/confirmation'], { state: orderState });
       },
