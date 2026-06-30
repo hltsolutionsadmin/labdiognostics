@@ -1,0 +1,217 @@
+<section class="container page">
+  <div class="crumbs">
+    <a class="crumb" routerLink="/">Home</a>
+    <span class="sep">/</span>
+    <a class="crumb" routerLink="/auth/profile">My Account</a>
+    <span class="sep">/</span>
+    <span class="crumb is-current">My Addresses</span>
+  </div>
+
+  <div class="layout">
+    <aside class="side">
+      <div class="menu">
+        <a class="mitem" routerLink="/auth/profile" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }">
+          <span class="mico" aria-hidden="true">H</span>
+          Account Overview
+        </a>
+        <a class="mitem" routerLink="/auth/orders" routerLinkActive="is-active">
+          <span class="mico" aria-hidden="true">O</span>
+          Order History
+        </a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">M</span>My Membership</a>
+        <a class="mitem" routerLink="/auth/addresses" routerLinkActive="is-active">
+          <span class="mico" aria-hidden="true">A</span>
+          My Addresses
+        </a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">C</span>My Appointments</a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">R</span>Reports</a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">S</span>Saved Packages</a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">P</span>Payment Methods</a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">N</span>Notifications</a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">G</span>Settings</a>
+        <a class="mitem" href="javascript:void(0)"><span class="mico" aria-hidden="true">?</span>Help & Support</a>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="head">
+        <div>
+          <div class="title">My Addresses</div>
+          <div class="sub">Manage delivery and home collection addresses</div>
+        </div>
+        <button class="btn" type="button" (click)="openCreate()">Create Address</button>
+      </div>
+
+      @if (success()) {
+        <div class="alert alert--ok">{{ success() }}</div>
+      }
+
+      @if (error()) {
+        <div class="alert alert--bad">
+          <span>{{ error() }}</span>
+          <button class="linkbtn" type="button" (click)="addressStore.loadAddresses()">Retry</button>
+        </div>
+      }
+
+      @if (isLoading()) {
+        <div class="card loading">
+          <div class="spinner" aria-hidden="true"></div>
+          <div>Loading addresses...</div>
+        </div>
+      } @else if (hasAddresses()) {
+        <div class="address-grid">
+          @for (address of addresses(); track address.id) {
+            <article class="address-card">
+              <div class="address-card__top">
+                <div>
+                  <div class="address-card__name">{{ address.fullName }}</div>
+                  <div class="address-card__mobile">{{ address.mobileNumber }}</div>
+                </div>
+                <div class="badges">
+                  <span class="type">{{ address.addressType }}</span>
+                  @if (address.isDefault) {
+                    <span class="default">Default</span>
+                  }
+                </div>
+              </div>
+
+              <div class="address-card__body">
+                <div>{{ address.addressLine1 }}</div>
+                @if (address.addressLine2) {
+                  <div>{{ address.addressLine2 }}</div>
+                }
+                @if (address.landmark) {
+                  <div class="muted">Landmark: {{ address.landmark }}</div>
+                }
+                <div>{{ address.city }}, {{ address.state }}</div>
+                <div>{{ address.country }} - {{ address.postalCode }}</div>
+              </div>
+
+              <div class="address-card__actions">
+                <button class="ghost" type="button" (click)="openEdit(address)">Edit</button>
+                <button class="danger" type="button" (click)="deleteAddress(address)" [disabled]="isDeleting()">Delete</button>
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="card empty">
+          <div class="empty__icon" aria-hidden="true">A</div>
+          <div class="empty__title">No addresses found.</div>
+          <button class="btn" type="button" (click)="openCreate()">Create Address</button>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (isFormOpen()) {
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="addressFormTitle">
+      <div class="modal__panel">
+        <div class="modal__head">
+          <div id="addressFormTitle" class="modal__title">{{ title() }}</div>
+          <button class="iconbtn" type="button" aria-label="Close" (click)="closeForm()">x</button>
+        </div>
+
+        <form class="form" [formGroup]="form" (ngSubmit)="save()">
+          @if (isLoadingLocations()) {
+            <div class="inline-status">
+              <span class="mini-spinner" aria-hidden="true"></span>
+              Loading countries, states, and cities...
+            </div>
+          }
+
+          @if (locationError()) {
+            <div class="alert alert--bad">
+              <span>{{ locationError() }}</span>
+              <button class="linkbtn" type="button" (click)="loadLocations()">Retry</button>
+            </div>
+          }
+
+          <div class="grid">
+            <label class="field">
+              <span>Full Name</span>
+              <input type="text" formControlName="fullName" />
+              @if (fieldInvalid('fullName')) { <small>Full name is required.</small> }
+            </label>
+            <label class="field">
+              <span>Mobile Number</span>
+              <input type="tel" inputmode="tel" formControlName="mobileNumber" />
+              @if (fieldInvalid('mobileNumber')) { <small>Enter a valid mobile number.</small> }
+            </label>
+            <label class="field field--span">
+              <span>Address Line 1</span>
+              <input type="text" formControlName="addressLine1" />
+              @if (fieldInvalid('addressLine1')) { <small>Address line 1 is required.</small> }
+            </label>
+            <label class="field field--span">
+              <span>Address Line 2</span>
+              <input type="text" formControlName="addressLine2" />
+            </label>
+            <label class="field field--span">
+              <span>Landmark</span>
+              <input type="text" formControlName="landmark" />
+            </label>
+            <label class="field">
+              <span>Country</span>
+              <select formControlName="countryId" (change)="onCountryChange()" [disabled]="isLoadingLocations()">
+                <option value="">Select country</option>
+                @for (country of countries(); track country.id) {
+                  <option [value]="country.id">{{ country.name }}</option>
+                }
+              </select>
+              @if (fieldInvalid('countryId')) { <small>Country is required.</small> }
+            </label>
+            <label class="field">
+              <span>State</span>
+              <select formControlName="stateId" (change)="onStateChange()" [disabled]="isLoadingLocations() || !form.controls.countryId.value">
+                <option value="">Select state</option>
+                @for (state of filteredStates(); track state.id) {
+                  <option [value]="state.id">{{ state.name }}</option>
+                }
+              </select>
+              @if (form.controls.countryId.value && !isLoadingLocations() && filteredStates().length === 0) {
+                <small>No states available for the selected country.</small>
+              }
+              @if (fieldInvalid('stateId')) { <small>State is required.</small> }
+            </label>
+            <label class="field">
+              <span>City</span>
+              <select formControlName="cityId" [disabled]="isLoadingLocations() || !form.controls.stateId.value">
+                <option value="">Select city</option>
+                @for (city of filteredCities(); track city.id) {
+                  <option [value]="city.id">{{ city.name }}</option>
+                }
+              </select>
+              @if (form.controls.stateId.value && !isLoadingLocations() && filteredCities().length === 0) {
+                <small>No cities available for the selected state.</small>
+              }
+              @if (fieldInvalid('cityId')) { <small>City is required.</small> }
+            </label>
+            <label class="field">
+              <span>Postal Code</span>
+              <input type="text" inputmode="numeric" formControlName="postalCode" />
+              @if (fieldInvalid('postalCode')) { <small>Postal code is required.</small> }
+            </label>
+            <label class="field">
+              <span>Address Type</span>
+              <select formControlName="addressType">
+                <option value="Home">Home</option>
+                <option value="Work">Work</option>
+                <option value="Other">Other</option>
+              </select>
+            </label>
+            <label class="check">
+              <input type="checkbox" formControlName="isDefault" />
+              <span>Default Address</span>
+            </label>
+          </div>
+
+          <div class="modal__actions">
+            <button class="ghost" type="button" (click)="closeForm()" [disabled]="isSaving()">Cancel</button>
+            <button class="btn" type="submit" [disabled]="isSaving()">{{ isSaving() ? 'Saving...' : 'Save Address' }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</section>
