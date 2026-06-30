@@ -25,13 +25,28 @@ export class LoginPageComponent {
   });
 
   submit(): void {
-    if (this.form.controls.emailOrMobile.invalid) {
+    if (this.form.controls.emailOrMobile.invalid || this.form.controls.password.invalid) {
       this.form.markAllAsTouched();
       return;
     }
+
+    const emailOrMobile = this.form.controls.emailOrMobile.value;
+    const password = this.form.controls.password.value;
+
     this.isSubmitting.set(true);
-    this.auth.login(this.form.controls.emailOrMobile.value);
-    this.router.navigateByUrl('/auth/profile');
-    this.isSubmitting.set(false);
+
+    this.auth.login(emailOrMobile, password).subscribe({
+      next: () => {
+        this.router.navigateByUrl('/');
+        this.isSubmitting.set(false);
+      },
+      error: (err: unknown) => {
+        console.error('Login failed', err);
+        this.isSubmitting.set(false);
+      },
+      complete: () => {
+        // no-op (subscribe is handled in next/error)
+      }
+    });
   }
 }

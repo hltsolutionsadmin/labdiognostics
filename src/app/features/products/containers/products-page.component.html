@@ -83,13 +83,10 @@
     <h2 class="section-title">Popular Tests</h2>
     <a class="view-all" routerLink="/products">View All</a>
   </div>
-  @defer (on idle) {
-    <div class="grid grid--compact">
-      @for (p of filtered(); track p.id) {
-        <app-product-card [product]="p" (addToCart)="onAdd($event)" />
-      }
-    </div>
-  } @placeholder {
-    <div class="placeholder">Loading popular tests…</div>
-  }
+
+  <div class="grid grid--compact">
+    @for (p of filtered(); track p.id) {
+      <app-product-card [product]="p" (addToCart)="onAdd($event)" />
+    }
+  </div>
 </section>
