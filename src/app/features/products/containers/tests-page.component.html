@@ -66,9 +66,10 @@
 
       <div class="grid">
         @for (p of filtered(); track p.id) {
-          <app-product-card [product]="p" (addToCart)="onAdd($event)" />
+          <app-product-card [product]="p" (addToCart)="onAdd($event)" (view)="routerLinkForTestDetails($event)" />
         }
       </div>
+
 
 
 

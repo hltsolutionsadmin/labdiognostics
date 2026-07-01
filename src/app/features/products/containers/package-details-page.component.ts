@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { ProductsApiService } from '../data-access/products-api.service';
 import { CartSignalService } from '../../cart/data-access/cart-signal.service';
 import { Product } from '../../../shared/types';
@@ -26,75 +26,94 @@ export class PackageDetailsPageComponent {
 
   private readonly id$ = this.route.paramMap.pipe(map((m) => m.get('id') ?? ''));
   readonly id = toSignal(this.id$, { initialValue: '' });
+  readonly isPackage = computed(() => !!this.product());
 
-  private readonly products$ = this.api.getProducts();
-  readonly products = toSignal(this.products$, { initialValue: [] as ReadonlyArray<Product> });
+  readonly product = toSignal(
+    this.id$.pipe(
+      switchMap(id => this.api.getProductById(id))
+    ),
+    {
+      initialValue: null
+    }
+  );
 
-  readonly product = computed<Product | null>(() => {
-    const id = this.id();
-    if (!id) return null;
-    return this.products().find((p) => p.id === id) ?? null;
-  });
-
-  readonly isPackage = computed(() => {
-    const p = this.product();
-    return !!p && p.category === 'Packages';
-  });
-
-  readonly discountPercent = computed(() => {
-    const p = this.product();
-    if (!p?.originalPrice || p.originalPrice <= p.price) return 0;
-    return Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
-  });
-
-  readonly youSave = computed(() => {
-    const p = this.product();
-    if (!p?.originalPrice) return 0;
-    return Math.max(0, p.originalPrice - p.price);
-  });
-
-  readonly includedCountLabel = computed(() => {
+  readonly heroSubtext = computed(() => {
     const p = this.product();
     if (!p) return '';
-    const m = /includes\s+(\d+)/i.exec(p.description);
-    if (!m) return p.description;
-    return `Includes ${m[1]}+ Tests`;
+
+    return (p as any).shortDescription ?? p.description ?? '';
   });
 
-  readonly testGroups = signal<ReadonlyArray<TestGroup>>([
-    {
-      name: 'Complete Blood Count (CBC)',
-      countLabel: '16 Tests',
-      items: ['Hemoglobin', 'RBC', 'WBC', 'Platelet Count', 'Hematocrit']
-    },
-    {
-      name: 'Diabetes Profile',
-      countLabel: '5 Tests',
-      items: ['Fasting Blood Sugar', 'HbA1c', 'PP Blood Sugar']
-    },
-    {
-      name: 'Lipid Profile',
-      countLabel: '8 Tests',
-      items: ['Total Cholesterol', 'HDL', 'LDL', 'Triglycerides']
-    },
-    {
-      name: 'Liver Function Test',
-      countLabel: '11 Tests',
-      items: ['SGOT', 'SGPT', 'Bilirubin Total', 'Alkaline Phosphatase']
-    },
-    {
-      name: 'Kidney Function Test',
-      countLabel: '7 Tests',
-      items: ['Creatinine', 'Urea', 'Uric Acid']
-    },
-    {
-      name: 'Thyroid Profile',
-      countLabel: '3 Tests',
-      items: ['T3', 'T4', 'TSH']
-    }
-  ]);
+  readonly packageOverviewText = computed(() => {
+    const p = this.product();
+    if (!p) return '';
 
-  readonly openGroup = signal<string>(this.testGroups()[0]?.name ?? '');
+    // Prefer description; fallback if missing.
+    const desc = (p as any).description ?? (p as any).shortDescription ?? '';
+    return desc || 'No description available.';
+  });
+
+  // Used by template highlights; only show what exists in API fields.
+  readonly highlights = computed(() => {
+    const p = this.product();
+    if (!p) return [] as ReadonlyArray<string>;
+
+    // Keep this defensive: backend may not provide these exact fields.
+    const attrs: string[] = [];
+
+    const possible = [
+      { key: 'testCountLabel', fallback: '' },
+      { key: 'reportsEtaLabel', fallback: '' },
+      { key: 'labName', fallback: '' }
+    ];
+
+    for (const item of possible) {
+      const v = (p as any)[item.key];
+      if (typeof v === 'string' && v.trim()) attrs.push(v.trim());
+    }
+
+    // If we can't derive from API, return empty so hardcoded/demo highlights don't show.
+    return attrs;
+  });
+
+  // Expose to template.
+  // Must be pure (no side-effects) so the accordion always reflects the API response.
+  readonly testGroups = computed((): ReadonlyArray<TestGroup> => {
+    const p = this.product();
+    if (!p) return [];
+
+    const anyP = p as any;
+    const bundleItems: ReadonlyArray<any> = anyP?.bundle?.items ?? [];
+
+    const testNames: string[] = [];
+    for (const it of bundleItems as ReadonlyArray<any>) {
+      const n = it?.product?.name ?? it?.name ?? it?.testName;
+      if (typeof n === 'string' && n.trim()) testNames.push(n.trim());
+    }
+
+    const uniqueNames = Array.from(new Set(testNames));
+
+    if (!uniqueNames.length) {
+      return [
+        {
+          name: 'No Tests',
+          countLabel: '0 Tests',
+          items: ['No test information available.']
+        }
+      ];
+    }
+
+    return [
+      {
+        name: 'Included Tests',
+        countLabel: `${uniqueNames.length} Tests`,
+        items: uniqueNames
+      }
+    ];
+  });
+
+
+  readonly openGroup = signal<string>('');
 
   readonly faqs = signal<ReadonlyArray<Faq>>([
     {
@@ -117,6 +136,36 @@ export class PackageDetailsPageComponent {
 
   readonly openFaq = signal<string>(this.faqs()[0]?.q ?? '');
 
+  readonly includedCountLabel = computed(() => {
+    const p = this.product();
+    if (!p) return '';
+
+    // Derive count from real API response: bundle.items[].
+    const anyP = p as any;
+    const count = Array.isArray(anyP?.bundle?.items) ? anyP.bundle.items.length : 0;
+    if (count > 0) return `Includes ${count}+ Tests`;
+
+    // Fallback to description parsing if backend embeds it.
+    const description = (p as any).description ?? '';
+    const match = /includes\s+(\d+)/i.exec(description);
+    if (match) {
+      return `Includes ${match[1]}+ Tests`;
+    }
+
+    // If we have no count, leave blank.
+    return '';
+  });
+
+  readonly testCountLabelSuffix = computed(() => {
+    const p = this.product();
+    if (!p) return '';
+
+    const anyP = p as any;
+    const count = Array.isArray(anyP?.bundle?.items) ? anyP.bundle.items.length : 0;
+    return count > 0 ? ` (${count})` : ' (0+)';
+  });
+
+
   toggleGroup(name: string): void {
     this.openGroup.set(this.openGroup() === name ? '' : name);
   }
@@ -128,15 +177,31 @@ export class PackageDetailsPageComponent {
   onAddToCart(): void {
     const p = this.product();
     if (!p) return;
-    if (p.category !== 'Packages') return;
+    
     this.cart.addProductFromProduct(p, 1).subscribe();
   }
 
   onBookNow(): void {
     const p = this.product();
     if (!p) return;
-    if (p.category !== 'Packages') return;
+    
     this.cart.addProductFromProduct(p, 1).subscribe();
     void this.router.navigate(['/cart']);
   }
+
+  readonly discountPercent = computed(() => {
+    const p = this.product();
+    if (!p?.originalPrice || p.originalPrice <= p.price) return 0;
+    return Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
+  });
+
+  readonly youSave = computed(() => {
+    const p = this.product();
+    if (!p?.originalPrice) return 0;
+    return Math.max(0, p.originalPrice - p.price);
+  });
+
+  // Template already depends on the accordion toggles.
 }
+
+

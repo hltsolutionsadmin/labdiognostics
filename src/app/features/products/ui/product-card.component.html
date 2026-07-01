@@ -1,4 +1,4 @@
-<article class="card" role="button" tabindex="0" (click)="view.emit(product)" (keydown.enter)="view.emit(product)" (keydown.space)="view.emit(product)">
+<article class="card" role="button" tabindex="0" (click)="view.emit(product)" (keydown.enter)="$event.stopPropagation(); view.emit(product)" (keydown.space)="$event.stopPropagation(); view.emit(product)" style="cursor:pointer">
   <div class="card__icon-wrap">
     <div class="card__icon">
       <img [src]="'assets/icons/report.svg'" alt="" aria-hidden="true" />

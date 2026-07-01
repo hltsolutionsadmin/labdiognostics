@@ -119,6 +119,29 @@ export class ProductsApiService {
         })
       );
   }
+  getProductById(productId: string): Observable<Product> {
+    console.debug('[ProductsApiService] getProductById()', { productId });
+
+    return this.http.get<any>(`${this.baseUrl}/api/products/${productId}`).pipe(
+      map((p): Product => {
+        // Temporary verification (remove after wiring all UI fields to API)
+        console.log('[ProductsApiService] getProductById raw response:', p);
+
+        const mappedPrice = p?.price?.price ?? 0;
+        const mappedOriginalPrice =
+          typeof p?.originalPrice?.price === 'number' ? p.originalPrice.price : undefined;
+
+        return {
+          ...p,
+          price: mappedPrice,
+          originalPrice: mappedOriginalPrice
+        } as Product;
+      }),
+      tap(() => console.debug('[ProductsApiService] getProductById() response mapped', { productId }))
+    );
+  }
+
+
 
 
 }

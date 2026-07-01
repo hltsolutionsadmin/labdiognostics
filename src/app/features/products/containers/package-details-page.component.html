@@ -18,7 +18,7 @@
 
             <div class="hero__meta">
               <div class="hero__title">{{ p.name }}</div>
-              <div class="hero__sub">Comprehensive checkup for overall well-being</div>
+              <div class="hero__sub">{{ heroSubtext() }}</div>
 
               <div class="hero__chips">
                 <div class="chip">
@@ -27,13 +27,14 @@
                 </div>
                 <div class="chip">
                   <span class="dot" aria-hidden="true"></span>
-                  Reports in 24 - 48 hrs
+                  {{ highlights()[0] || 'Reports in 24 - 48 hrs' }}
                 </div>
                 <div class="chip">
                   <span class="dot" aria-hidden="true"></span>
-                  Home Sample Collection
+                  {{ highlights()[1] || 'Home Sample Collection' }}
                 </div>
               </div>
+
             </div>
 
             <button class="wish" type="button" aria-label="Add to wishlist">
@@ -53,7 +54,8 @@
               <div class="highlights">
                 <div class="hitem">
                   <span class="hicon" aria-hidden="true">✓</span>
-                  <span class="htext">80+ Tests</span>
+                  <span class="htext">{{ includedCountLabel() }}</span>
+
                 </div>
                 <div class="hitem">
                   <span class="hicon" aria-hidden="true">✓</span>
@@ -74,7 +76,7 @@
           <div class="card">
             <div class="card__head testsHead">
               <div>
-                <div class="card__title">Tests Included (80+)</div>
+                <div class="card__title">Tests Included{{ testCountLabelSuffix() }}</div>
                 <div class="muted">Search tests in this package</div>
               </div>
               <button class="dl" type="button">Download Test List</button>

@@ -1,0 +1,65 @@
+<section class="container page">
+  @if (product(); as p) {
+    <div class="crumbs">
+      <a class="crumb" routerLink="/">Home</a>
+      <span class="sep">›</span>
+      <a class="crumb" routerLink="/tests">Tests</a>
+      <span class="sep">›</span>
+      <span class="crumb is-current">{{ p.name }}</span>
+    </div>
+
+    <div class="layout">
+      <div class="left">
+        <div class="card">
+          <div class="card__head">
+            <div class="card__title">Test Overview</div>
+          </div>
+          <div class="card__body">
+            <div class="hero">
+              <div class="hero__icon" aria-hidden="true">
+                <img src="/assets/icons/report.svg" alt="" />
+              </div>
+              <div class="hero__meta">
+                <div class="hero__title">{{ p.name }}</div>
+                <div class="hero__sub">CareLab Test Details</div>
+                <div class="hero__chips">
+                  <div class="chip">
+                    <span class="dot" aria-hidden="true"></span>
+                    {{ p.price | currency:'INR':'symbol':'1.0-0' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card__head">
+                <div class="card__title">Description</div>
+              </div>
+              <div class="card__body">
+                <div class="para">{{ p.description }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="right">
+        <div class="box">
+          <div class="box__title">Test Price</div>
+          <div class="kv">
+            <div class="kv__row">
+              <div class="k">Price</div>
+              <div class="v">{{ p.price | currency:'INR':'symbol':'1.0-0' }}</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  } @else {
+    <div class="notFound">
+      <div class="notFound__title">Loading…</div>
+      <div class="notFound__sub">Fetching test details.</div>
+    </div>
+  }
+</section>
+

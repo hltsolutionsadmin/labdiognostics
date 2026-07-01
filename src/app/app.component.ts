@@ -8,4 +8,7 @@ import { AppShellComponent } from './shell/app-shell.component';
   styles: ''
 })
 export class AppComponent {
+  // used by src/app/app.component.spec.ts
+  readonly title = 'labdiagnostics';
 }
+

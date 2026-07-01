@@ -1,11 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
+
+
 import { toSignal } from '@angular/core/rxjs-interop';
+
 import { ProductsApiService } from '../data-access/products-api.service';
 import { Product } from '../../../shared/types';
 import { ProductCardComponent } from '../ui/product-card.component';
 import { CartSignalService } from '../../cart/data-access/cart-signal.service';
 import { tap } from 'rxjs';
+
 
 
 @Component({
@@ -17,6 +21,16 @@ import { tap } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TestsPageComponent {
+  constructor() {}
+
+  readonly router = inject(Router);
+
+  routerLinkForTestDetails(p: Product): void {
+    this.router.navigate(['/tests', p.id]);
+  }
+
+
+
   private readonly _instanceId = crypto.randomUUID();
   private readonly api = inject(ProductsApiService);
   private readonly cart = inject(CartSignalService);
@@ -93,6 +107,7 @@ export class TestsPageComponent {
     if (cat === 'All') return this.products().length;
     return this.products().filter((p) => p.category === cat).length;
   }
+
 
   onAdd(product: Product): void {
     this.cart.addProductFromProduct(product, 1).subscribe();

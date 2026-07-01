@@ -28,6 +28,14 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'tests/:id',
+    loadComponent: () =>
+      import('./features/products/containers/test-details-page.component').then(
+        (m) => m.TestDetailsPageComponent
+      )
+  },
+
+  {
     path: 'products',
     loadComponent: () =>
       import('./features/products/containers/products-page.component').then(
