@@ -65,10 +65,14 @@
       </div>
 
       <div class="grid">
-        @for (p of pagedItems(); track p.id) {
-          <app-product-card [product]="p" (addToCart)="onAdd($event)" />
+        @for (p of filtered(); track p.id) {
+          <app-product-card [product]="p" (addToCart)="onAdd($event)" (view)="routerLinkForTestDetails($event)" />
         }
       </div>
+
+
+
+
 
       <div class="pager">
         <div class="pager__left">

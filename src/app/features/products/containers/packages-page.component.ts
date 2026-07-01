@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ProductsApiService } from '../data-access/products-api.service';
 import { Product } from '../../../shared/types';
@@ -145,8 +146,15 @@ export class PackagesPageComponent {
   }
 
   onView(product: Product): void {
-    if (product.category !== 'Packages') return;
+    console.log('[PackagesPageComponent] onView clicked product:', product);
+    if (!product?.id) {
+      console.warn('[PackagesPageComponent] onView: product.id is missing');
+      return;
+    }
     void this.router.navigate(['/packages', product.id]);
   }
+
+
+
 }
 
