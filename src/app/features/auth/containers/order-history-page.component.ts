@@ -65,23 +65,24 @@ export class OrderHistoryPageComponent implements OnInit {
 
       const filtered = orders.filter(order => {
         if (search) {
-          const orderId = (order.orderId || order.id || '').toLowerCase();
-          const packageName = (order.packageName || '').toLowerCase();
-          const testName = (order.testName || '').toLowerCase();
-          if (!orderId.includes(search) && !packageName.includes(search) && !testName.includes(search)) {
+          const orderId = (order.id || '').toLowerCase();
+          const productName = (
+            order.lineItems?.[0]?.productName || ''
+          ).toLowerCase();
+          if (!orderId.includes(search) && !productName.includes(search)) {
             return false;
           }
         }
 
         if (status !== 'All') {
-          const orderStatus = this.normalizeStatus(order.orderStatus);
+          const orderStatus = this.normalizeStatus(order.status);
           if (orderStatus !== status) {
             return false;
           }
         }
 
         if (start || end) {
-          const orderDate = new Date(order.orderDate);
+          const orderDate = new Date(order.createdDate);
           if (start && orderDate < start) return false;
           if (end && orderDate > end) return false;
         }
@@ -141,17 +142,18 @@ export class OrderHistoryPageComponent implements OnInit {
     const filtered = orders.filter(order => {
       // Search filter
       if (search) {
-        const orderId = (order.orderId || order.id || '').toLowerCase();
-        const packageName = (order.packageName || '').toLowerCase();
-        const testName = (order.testName || '').toLowerCase();
-        if (!orderId.includes(search) && !packageName.includes(search) && !testName.includes(search)) {
+        const orderId = (order.id || '').toLowerCase();
+        const productName = (
+          order.lineItems?.[0]?.productName || ''
+        ).toLowerCase();
+        if (!orderId.includes(search) && !productName.includes(search)) {
           return false;
         }
       }
 
       // Status filter
       if (status !== 'All') {
-        const orderStatus = this.normalizeStatus(order.orderStatus);
+        const orderStatus = this.normalizeStatus(order.status);
         if (orderStatus !== status) {
           return false;
         }
@@ -159,7 +161,7 @@ export class OrderHistoryPageComponent implements OnInit {
 
       // Date range filter
       if (start || end) {
-        const orderDate = new Date(order.orderDate);
+        const orderDate = new Date(order.createdDate);
         if (start && orderDate < start) return false;
         if (end && orderDate > end) return false;
       }
@@ -222,23 +224,24 @@ export class OrderHistoryPageComponent implements OnInit {
       const end = this.endDate();
 
       if (search) {
-        const orderId = (order.orderId || order.id || '').toLowerCase();
-        const packageName = (order.packageName || '').toLowerCase();
-        const testName = (order.testName || '').toLowerCase();
-        if (!orderId.includes(search) && !packageName.includes(search) && !testName.includes(search)) {
+        const orderId = (order.id || '').toLowerCase();
+        const productName = (
+          order.lineItems?.[0]?.productName || ''
+        ).toLowerCase();
+        if (!orderId.includes(search) && !productName.includes(search)) {
           return false;
         }
       }
 
       if (status !== 'All') {
-        const orderStatus = this.normalizeStatus(order.orderStatus);
+        const orderStatus = this.normalizeStatus(order.status);
         if (orderStatus !== status) {
           return false;
         }
       }
 
       if (start || end) {
-        const orderDate = new Date(order.orderDate);
+        const orderDate = new Date(order.createdDate);
         if (start && orderDate < start) return false;
         if (end && orderDate > end) return false;
       }
@@ -297,22 +300,21 @@ export class OrderHistoryPageComponent implements OnInit {
     this.processOrders();
   }
 
-  private mapOrderToRow(order: OrderItem): OrderRow {
-    const date = new Date(order.orderDate);
-    const dateText = this.formatDate(date);
-    const timeText = this.formatTime(date);
+private mapOrderToRow(order: OrderItem): OrderRow {
+  const date = new Date(order.createdDate);
 
-    return {
-      id: order.orderId || order.id || '',
-      title: order.packageName || order.testName || 'Unknown',
-      subtitle: order.packageName ? 'Package' : 'Test',
-      dateText,
-      timeText,
-      amount: order.totalAmount,
-      status: this.normalizeStatus(order.orderStatus)
-    };
-  }
+  const firstItem = order.lineItems?.[0];
 
+  return {
+    id: order.id,
+    title: firstItem?.productName ?? 'Unknown',
+    subtitle: 'Test',
+    dateText: this.formatDate(date),
+    timeText: this.formatTime(date),
+    amount: order.totalPrice,
+    status: this.normalizeStatus(order.status)
+  };
+}
   private formatDate(date: Date): string {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const day = date.getDate();
@@ -346,5 +348,9 @@ export class OrderHistoryPageComponent implements OnInit {
     if (status === 'Processing') return 'pill pill--info';
     if (status === 'Confirmed') return 'pill pill--info';
     return 'pill pill--muted';
+  }
+
+  displayPage(btn: number | string): string {
+    return typeof btn === 'number' ? String(btn + 1) : btn;
   }
 }
