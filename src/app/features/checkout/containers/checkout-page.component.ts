@@ -1,10 +1,27 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CurrencyPipe } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CartSignalService } from '../../cart/data-access/cart-signal.service';
-import { MockPaymentGatewayService } from '../data-access/mock-payment-gateway.service';
 import { Router } from '@angular/router';
-import { map, of } from 'rxjs';
+import { finalize } from 'rxjs';
+import { AddressApiService } from '../../auth/data-access/address-api.service';
+import { Address } from '../../auth/data-access/models/address.models';
+import {
+  CheckoutPaymentMethod,
+  CheckoutRequest,
+  CheckoutShippingMethod,
+  OrdersApiService
+} from '../data-access/orders-api.service';
+import { CheckoutStateService } from '../data-access/checkout-state.service';
+
+type LabOption = {
+  key: 'center-1' | 'center-2';
+  id: string;
+  title: string;
+  line: string;
+  hours: string;
+};
 
 @Component({
   selector: 'app-checkout-page',
@@ -16,8 +33,10 @@ import { map, of } from 'rxjs';
 })
 export class CheckoutPageComponent {
   private readonly cart = inject(CartSignalService);
-  private readonly payment = inject(MockPaymentGatewayService);
+  private readonly ordersApi = inject(OrdersApiService);
+  private readonly checkoutState = inject(CheckoutStateService);
   private readonly router = inject(Router);
+  private readonly addressApi = inject(AddressApiService);
 
   readonly items = this.cart.items;
   readonly subtotal = this.cart.subtotal;
@@ -28,7 +47,31 @@ export class CheckoutPageComponent {
   readonly showAddAddress = signal(false);
   readonly collectionMode = signal<'home' | 'lab'>('home');
   readonly selectedLab = signal<'center-1' | 'center-2'>('center-1');
-  readonly selectedAddress = signal<'home' | 'office' | 'new'>('home');
+  readonly addresses = signal<Address[]>([]);
+  readonly selectedAddressId = signal<string>('');
+
+  readonly labOptions: ReadonlyArray<LabOption> = [
+    {
+      key: 'center-1',
+      id: 'lab_center_1',
+      title: 'CareLab Diagnostics - MVP Colony',
+      line: 'MVP Colony, Visakhapatnam',
+      hours: '7:00 AM - 7:00 PM'
+    },
+    {
+      key: 'center-2',
+      id: 'lab_center_2',
+      title: 'CareLab Diagnostics - Madhurawada',
+      line: 'IT SEZ, Madhurawada, Visakhapatnam',
+      hours: '7:00 AM - 7:00 PM'
+    }
+  ];
+
+  readonly selectedAddressOption = computed(() =>
+    this.addresses().find(a => a.id === this.selectedAddressId()) ?? null
+  );
+
+  readonly selectedLabOption = computed(() => this.labOptions.find((l) => l.key === this.selectedLab()) ?? null);
 
   readonly calendarMonthLabel = 'May 2025';
   readonly calendarDays = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -77,10 +120,31 @@ export class CheckoutPageComponent {
       nonNullable: true,
       validators: [Validators.required]
     }),
-    paymentToken: new FormControl<string>('', { nonNullable: true, validators: [Validators.required] }),
+    paymentToken: new FormControl<string>('', { nonNullable: true }),
     acceptTerms: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.requiredTrue] })
   });
+  
+  constructor() {
+    this.loadAddresses();
+  }
 
+  private loadAddresses(): void {
+    this.addressApi.getAddresses().subscribe({
+      next: (addresses) => {
+        this.addresses.set(addresses);
+
+        const defaultAddress =
+          addresses.find(a => a.isDefault) ?? addresses[0];
+
+        if (defaultAddress) {
+          this.selectedAddressId.set(defaultAddress.id);
+        }
+      },
+      error: err => {
+        console.error('Failed to load addresses', err);
+      }
+    });
+  }
   selectDay(day: number): void {
     this.selectedDay.set(day);
     const iso = `2025-05-${String(day).padStart(2, '0')}`;
@@ -94,17 +158,24 @@ export class CheckoutPageComponent {
   }
 
   openAddAddress(): void {
-    this.selectedAddress.set('new');
+    this.selectedAddressId.set('');
     this.showAddAddress.set(true);
   }
 
   cancelAddAddress(): void {
     this.showAddAddress.set(false);
-    if (this.collectionMode() === 'home') this.selectedAddress.set('home');
+
+    const defaultAddress =
+        this.addresses().find(a => a.isDefault) ??
+        this.addresses()[0];
+
+    if (defaultAddress) {
+        this.selectedAddressId.set(defaultAddress.id);
+    }
   }
 
   private isAddressStepValid(): boolean {
-    if (this.collectionMode() === 'home' && this.selectedAddress() !== 'new') {
+    if (this.collectionMode() === 'home' && this.selectedAddressId()) {
       return true;
     }
     if (this.collectionMode() === 'lab') {
@@ -130,8 +201,7 @@ export class CheckoutPageComponent {
 
   private isPaymentStepValid(): boolean {
     if (this.form.controls.paymentMethod.invalid) return false;
-    if (this.form.controls.paymentMethod.value === 'cod') return true;
-    return !this.form.controls.paymentToken.invalid;
+    return true;
   }
 
   back(): void {
@@ -151,7 +221,7 @@ export class CheckoutPageComponent {
       if (this.collectionMode() === 'lab') {
         touch(['fullName', 'email', 'mobile']);
       }
-      if (this.collectionMode() === 'home' && this.selectedAddress() === 'new') {
+      if (this.collectionMode() === 'home' && this.selectedAddressId()) {
         touch(['fullName', 'email', 'mobile', 'addressLine1', 'city', 'postalCode']);
       }
       if (!this.isAddressStepValid()) return;
@@ -168,7 +238,6 @@ export class CheckoutPageComponent {
 
     if (s === 2) {
       touch(['paymentMethod']);
-      if (this.form.controls.paymentMethod.value !== 'cod') touch(['paymentToken']);
       if (!this.isPaymentStepValid()) return;
       this.step.set(3);
       return;
@@ -206,67 +275,99 @@ export class CheckoutPageComponent {
   }
 
   submit(): void {
+    if (this.isSubmitting()) return;
     if (this.step() !== 3) return;
     if (!this.isAddressStepValid() || !this.isAppointmentStepValid() || !this.isPaymentStepValid()) return;
     if (this.form.controls.acceptTerms.invalid) {
       this.form.controls.acceptTerms.markAsTouched();
       return;
     }
+
+    const request = this.buildCheckoutRequest();
+    if (!request) return;
+
+    this.setCheckoutError(null);
     this.isSubmitting.set(true);
 
-    const now = new Date();
-    const orderId = `CLD${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(
-      Math.floor(1000 + Math.random() * 9000)
-    )}`;
-
-    const orderState = {
-      orderId,
-      orderDate: now.toISOString(),
-      paymentStatus: this.form.controls.paymentMethod.value === 'cod' ? 'Pending' : 'Paid',
-      paymentMethod: this.form.controls.paymentMethod.value,
-      amountPaid: this.estimatedTotal(),
-      subtotal: this.subtotal(),
-      discount: this.discount(),
-      convenienceFee: this.convenienceFee(),
-      items: this.items().map((i) => ({ ...i })),
-      collectionMode: this.collectionMode(),
-      selectedLab: this.selectedLab(),
-      selectedAddress: this.selectedAddress(),
-      contact: {
-        fullName: this.form.controls.fullName.value,
-        email: this.form.controls.email.value,
-        mobile: this.form.controls.mobile.value
-      },
-      address:
-        this.collectionMode() === 'home'
-          ? {
-              addressLine1: this.form.controls.addressLine1.value,
-              city: this.form.controls.city.value,
-              postalCode: this.form.controls.postalCode.value
-            }
-          : null,
-      appointment: {
-        date: this.form.controls.appointmentDate.value,
-        time: this.form.controls.appointmentTime.value
-      }
-    };
-
-    const charge$ =
-      this.form.controls.paymentMethod.value === 'cod'
-        ? of(null)
-        : this.payment
-            .charge(this.form.controls.paymentToken.value, this.estimatedTotal())
-            .pipe(map(() => null));
-
-    charge$.subscribe({
-      next: () => {
+    this.ordersApi.checkout(request).pipe(finalize(() => this.isSubmitting.set(false))).subscribe({
+      next: (response) => {
+        const successState = this.checkoutState.setSuccess(response);
         this.cart.clearCart();
-        this.isSubmitting.set(false);
-        this.router.navigate(['/checkout/confirmation'], { state: orderState });
+        void this.router.navigate(['/checkout/confirmation'], { state: successState });
       },
-      error: () => {
-        this.isSubmitting.set(false);
+      error: (error: unknown) => {
+        this.setCheckoutError(this.errorMessage(error));
       }
     });
+  }
+
+  private buildCheckoutRequest(): CheckoutRequest | null {
+    const cartId = this.cart.cartId();
+    if (!cartId) {
+      this.setCheckoutError('Your cart is not ready. Please refresh the cart and try again.');
+      return null;
+    }
+
+    const shippingAddressId = this.selectedShippingAddressId();
+    if (!shippingAddressId) {
+      this.setCheckoutError('Please select a saved address before placing the order.');
+      return null;
+    }
+
+    const payment = this.mapPaymentMethod();
+
+    return {
+      cartId,
+      shippingAddressId,
+      billingAddressId: shippingAddressId,
+      shippingMethod: this.mapShippingMethod(),
+      paymentMethod: payment.method,
+      paymentMethodId: payment.paymentMethodId,
+      couponCode: null,
+      notes: null,
+      deviceFingerprint: null,
+      ipAddress: null
+    };
+  }
+
+  private selectedShippingAddressId(): string | null {
+    if (this.collectionMode() === 'lab') {
+      return null;
+    }
+
+    return this.selectedAddressOption()?.id ?? null;
+  }
+
+  private mapShippingMethod(): CheckoutShippingMethod {
+    return this.collectionMode() === 'home' ? 'HOME_COLLECTION' : 'VISIT_LAB';
+  }
+
+  private mapPaymentMethod(): { method: CheckoutPaymentMethod; paymentMethodId: string | null } {
+    const paymentMethod = this.form.controls.paymentMethod.value;
+    if (paymentMethod === 'cod') return { method: 'COD', paymentMethodId: null };
+
+    const paymentMethodId = this.form.controls.paymentToken.value.trim() || null;
+    return { method: 'ONLINE', paymentMethodId };
+  }
+
+  private errorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const body = error.error as unknown;
+      if (body && typeof body === 'object') {
+        const record = body as Record<string, unknown>;
+        if (typeof record['message'] === 'string') return record['message'];
+        if (typeof record['error'] === 'string') return record['error'];
+      }
+      if (typeof body === 'string') return body;
+    }
+
+    if (error instanceof Error && error.message) return error.message;
+    return 'Checkout failed. Please try again.';
+  }
+
+  private setCheckoutError(message: string | null): void {
+    const current = this.form.errors ?? {};
+    const { checkout: _checkout, ...rest } = current;
+    this.form.setErrors(message ? { ...rest, checkout: message } : Object.keys(rest).length ? rest : null);
   }
 }

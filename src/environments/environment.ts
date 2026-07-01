@@ -1,6 +1,6 @@
 export const environment = {
   profile: 'development',
-  apiBaseUrl: 'http://localhost:3000',
-  storeId: 'd96385ff-d047-469c-9144-8ca3dc7865d0'
+  apiBaseUrl: 'http://localhost:9443',
+  storeId: 'f087c7a4-0d97-405d-a39e-766a712c9d60'
 };
 
