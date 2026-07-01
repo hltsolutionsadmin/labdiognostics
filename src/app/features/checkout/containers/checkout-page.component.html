@@ -61,22 +61,48 @@
 
           @if (collectionMode() === 'home') {
           <div class="addr-grid">
-            <label class="addr" [class.is-selected]="selectedAddress() === 'home'" (click)="selectedAddress.set('home'); cancelAddAddress()">
-              <input class="addr__radio" type="radio" [checked]="selectedAddress() === 'home'" />
-              <div class="addr__title">
-                Home <span class="pill">Default</span>
-              </div>
-              <div class="addr__line">Door No. 12-8-32, MVP Colony, Visakhapatnam, Andhra Pradesh - 530017</div>
-              <div class="addr__line muted">Mobile: +91 98765 43210</div>
-            </label>
 
-            <label class="addr" [class.is-selected]="selectedAddress() === 'office'" (click)="selectedAddress.set('office'); cancelAddAddress()">
-              <input class="addr__radio" type="radio" [checked]="selectedAddress() === 'office'" />
-              <div class="addr__title">Office</div>
-              <div class="addr__line">2nd Floor, Tech Park, IT SEZ, Madhurawada, Visakhapatnam - 530048</div>
-              <div class="addr__line muted">Mobile: +91 98765 12345</div>
-            </label>
-          </div>
+              @for (address of addresses(); track address.id) {
+
+                <label
+                  class="addr"
+                  [class.is-selected]="selectedAddressId() === address.id"
+                  (click)="selectedAddressId.set(address.id)">
+
+                  <input
+                    class="addr__radio"
+                    type="radio"
+                    [checked]="selectedAddressId() === address.id">
+
+                  <div class="addr__title">
+                    {{ address.addressType }}
+
+                    @if(address.isDefault){
+                      <span class="pill">Default</span>
+                    }
+                  </div>
+
+                  <div class="addr__line">
+                    {{ address.addressLine1 }}
+                    @if(address.addressLine2){
+                      , {{ address.addressLine2 }}
+                    },
+                    {{ address.city }},
+                    {{ address.state }}
+                    -
+                    {{ address.postalCode }}
+                  </div>
+
+                  <div class="addr__line muted">
+                    Mobile:
+                    {{ address.mobileNumber }}
+                  </div>
+
+                </label>
+
+              }
+
+            </div>
 
           <div class="add">
             <button class="add__btn" type="button" (click)="openAddAddress()">
@@ -273,8 +299,8 @@
           </div>
           @if (form.controls.paymentMethod.value !== 'cod') {
             <label class="field field--span">
-              <span>Payment token</span>
-              <input type="text" formControlName="paymentToken" placeholder="tok_visa_123 (mock)" />
+              <span>Payment method ID</span>
+              <input type="text" formControlName="paymentToken" placeholder="Optional" />
             </label>
           }
         }
@@ -292,8 +318,16 @@
               <div class="rcard__body">
                 <div class="tag">{{ collectionMode() === 'home' ? 'Home Collection' : 'Center Visit' }}</div>
                 @if (collectionMode() === 'home') {
-                  <div class="rcard__line">Door No. 12-8-32, MVP Colony, Visakhapatnam, Andhra Pradesh - 530017</div>
-                  <div class="rcard__line muted">Mobile: +91 98765 43210</div>
+                  @if (selectedAddressId() === 'new') {
+                    <div class="rcard__line">{{ form.controls.addressLine1.value }}, {{ form.controls.city.value }} - {{ form.controls.postalCode.value }}</div>
+                    <div class="rcard__line muted">Mobile: {{ form.controls.mobile.value }}</div>
+                  } @else if (selectedAddressId() === 'office') {
+                    <div class="rcard__line">2nd Floor, Tech Park, IT SEZ, Madhurawada, Visakhapatnam - 530048</div>
+                    <div class="rcard__line muted">Mobile: +91 98765 12345</div>
+                  } @else {
+                    <div class="rcard__line">Door No. 12-8-32, MVP Colony, Visakhapatnam, Andhra Pradesh - 530017</div>
+                    <div class="rcard__line muted">Mobile: +91 98765 43210</div>
+                  }
                 } @else {
                   <div class="rcard__line">
                     {{ selectedLab() === 'center-1' ? 'CareLab Diagnostics - MVP Colony' : 'CareLab Diagnostics - Madhurawada' }}
@@ -353,6 +387,10 @@
                 <div class="tError">Please accept Terms & Conditions to place the order.</div>
               }
             </div>
+
+            @if (form.errors?.['checkout']; as error) {
+              <div class="api-error">{{ error }}</div>
+            }
           </div>
         }
 
@@ -366,7 +404,7 @@
             </button>
           } @else {
             <button class="btn" type="submit" [disabled]="isSubmitting() || form.controls.acceptTerms.invalid">
-              Place Order {{ estimatedTotal() | currency:'INR':'symbol':'1.0-0' }}
+              {{ isSubmitting() ? 'Placing Order...' : 'Place Order' }} {{ estimatedTotal() | currency:'INR':'symbol':'1.0-0' }}
             </button>
           }
         </div>

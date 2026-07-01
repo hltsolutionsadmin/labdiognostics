@@ -52,22 +52,80 @@ function extractList(raw: unknown): unknown[] {
 
 function toAddress(raw: unknown): Address {
   const o = (raw && typeof raw === 'object' ? raw : {}) as RawAddress;
+
+  // Backend returns nested address object
+  const address =
+    o['address'] && typeof o['address'] === 'object'
+      ? (o['address'] as RawAddress)
+      : o;
+
   return {
-    id: text(o, ['id', 'addressId', '_id']),
-    fullName: text(o, ['fullName', 'name', 'recipientName']),
-    mobileNumber: text(o, ['mobileNumber', 'mobile', 'phoneNumber', 'phone']),
-    addressLine1: text(o, ['addressLine1', 'line1', 'streetAddress']),
-    addressLine2: text(o, ['addressLine2', 'line2']),
-    landmark: text(o, ['landmark']),
-    countryId: text(o, ['countryId']) || nestedText(o, 'country', ['id', 'countryId']),
-    stateId: text(o, ['stateId']) || nestedText(o, 'state', ['id', 'stateId']),
-    cityId: text(o, ['cityId']) || nestedText(o, 'city', ['id', 'cityId']),
-    city: text(o, ['city', 'cityName']) || nestedText(o, 'city', ['name', 'cityName']),
-    state: text(o, ['state', 'stateName', 'province']) || nestedText(o, 'state', ['name', 'stateName']),
-    country: text(o, ['country', 'countryName']) || nestedText(o, 'country', ['name', 'countryName']) || 'India',
-    postalCode: text(o, ['postalCode', 'pincode', 'zipCode', 'zip']),
-    addressType: type(o),
-    isDefault: bool(o, ['isDefault', 'defaultAddress', 'default'])
+    id: text(address, ['id', 'addressId', '_id']),
+
+    // user name comes from parent object
+    fullName:
+      text(o, ['userName']) ||
+      text(address, ['fullName', 'name', 'recipientName']),
+
+    mobileNumber: text(address, [
+      'mobileNumber',
+      'mobile',
+      'phoneNumber',
+      'phone'
+    ]),
+
+    addressLine1: text(address, [
+      'addressLine1',
+      'line1',
+      'streetAddress'
+    ]),
+
+    addressLine2: text(address, [
+      'addressLine2',
+      'line2'
+    ]),
+
+    landmark: text(address, ['landmark']),
+
+    countryId:
+      text(address, ['countryId']) ||
+      nestedText(address, 'country', ['id']),
+
+    stateId:
+      text(address, ['stateId']) ||
+      nestedText(address, 'state', ['id']),
+
+    cityId:
+      text(address, ['cityId']) ||
+      nestedText(address, 'city', ['id']),
+
+    city:
+      text(address, ['city', 'cityName']) ||
+      nestedText(address, 'city', ['name']),
+
+    state:
+      text(address, ['state', 'stateName']) ||
+      nestedText(address, 'state', ['name']),
+
+    country:
+      text(address, ['country', 'countryName']) ||
+      nestedText(address, 'country', ['name']) ||
+      'India',
+
+    postalCode: text(address, [
+      'postalCode',
+      'pincode',
+      'zipCode',
+      'zip'
+    ]),
+
+    addressType: type(address),
+
+    isDefault: bool(address, [
+      'isDefault',
+      'defaultAddress',
+      'default'
+    ])
   };
 }
 

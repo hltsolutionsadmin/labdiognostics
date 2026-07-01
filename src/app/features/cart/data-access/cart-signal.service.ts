@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, tap, catchError, of } from 'rxjs';
+import { Observable, tap, catchError, of, switchMap } from 'rxjs';
 
 import { Cart, CartItem, Product } from '../../../shared/types';
 import { CartApiService } from './cart-api.service';
@@ -114,21 +114,29 @@ export class CartSignalService {
   addProduct(productId: string, quantity = 1): Observable<Cart | null> {
     const currentCartId = this.cartId();
     if (!currentCartId) {
-      console.error('[Cart] addProduct() - No cartId available');
-      this._error.set('Cart not initialized');
-      return of(null);
+      console.debug('[Cart] addProduct() - No cartId available, initializing cart first');
+      return this.initializeCart().pipe(
+        switchMap((cart) => {
+          if (!cart) return of(null);
+          return this.addItemToCart(cart.id, productId, quantity);
+        })
+      );
     }
 
+    return this.addItemToCart(currentCartId, productId, quantity);
+  }
+
+  private addItemToCart(cartId: string, productId: string, quantity: number): Observable<Cart | null> {
     if (quantity <= 0) {
       console.warn('[Cart] addProduct() - Invalid quantity', { quantity });
       return of(null);
     }
 
-    console.debug('[Cart] addProduct()', { cartId: currentCartId, productId, quantity });
+    console.debug('[Cart] addProduct()', { cartId, productId, quantity });
     this._loading.set(true);
     this._error.set(null);
 
-    return this.cartApi.addItem(currentCartId, productId, quantity).pipe(
+    return this.cartApi.addItem(cartId, productId, quantity).pipe(
       tap((updatedCart) => {
         console.debug('[Cart] addProduct() - Cart updated', {
           cartId: updatedCart.id,

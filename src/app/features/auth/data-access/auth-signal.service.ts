@@ -118,7 +118,6 @@ export class AuthSignalService {
     }
   }
 
-  private readonly http = inject(HttpClient);
   private readonly apiBaseUrl = environment.apiBaseUrl;
 
   private persistTokens(tokens: {
@@ -140,10 +139,16 @@ export class AuthSignalService {
   };
 
   constructor() {
-    effect(() => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this._user()));
-    });
-  }
+      effect(() => {
+        const user = this._user();
+
+        if (user) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+        } else {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      });
+    }
 
   login(payload: LoginPayload) {
     const body = {
@@ -156,7 +161,22 @@ export class AuthSignalService {
       headers: this.buildJsonHeaders()
     }).pipe(
       tap((response) => {
+        console.debug('[AUTH] Login response:', response);
+
+        // Save JWT tokens
+        this.persistTokens({
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+          expiresIn: response.expiresIn,
+          tokenType: response.tokenType
+        });
+
+        console.debug('[AUTH] Tokens stored successfully');
+
+        // Save logged-in user
         this._user.set(this.getLoginUser(response, payload.username));
+
+        console.debug('[AUTH] User stored successfully');
       })
     );
   }

@@ -385,6 +385,15 @@ input:focus {
 .terms__row { display: flex; gap: .65rem; align-items: flex-start; font-weight: 500; color: var(--text-2); line-height: 1.5; }
 .tlink { color: var(--brand); text-decoration: none; font-weight: 700; }
 .tError { margin-top: .5rem; color: var(--red); font-size: .85rem; }
+.api-error {
+  border: 1px solid rgba(220,38,38,.25);
+  border-radius: var(--r-md);
+  background: #fef2f2;
+  color: var(--red);
+  padding: .85rem 1rem;
+  font-weight: 700;
+  font-size: .88rem;
+}
 
 /* ── Action buttons ── */
 .actions { margin-top: .5rem; display: flex; justify-content: space-between; gap: .75rem; }

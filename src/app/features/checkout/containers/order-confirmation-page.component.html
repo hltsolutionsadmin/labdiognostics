@@ -3,11 +3,11 @@
     <div class="layout">
       <div class="panel">
         <div class="hero">
-          <div class="hero__icon" aria-hidden="true">✓</div>
+          <div class="hero__icon" aria-hidden="true">OK</div>
           <div>
             <div class="badge">Order Confirmed!</div>
             <h1 class="h1">Thank you! Your order has been placed successfully.</h1>
-            <div class="hint">We’ve received your order and a confirmation has been sent to your email and registered mobile number.</div>
+            <div class="hint">We've received your order and saved the checkout details.</div>
           </div>
         </div>
 
@@ -17,143 +17,46 @@
             <div class="meta__v green">{{ s.orderId }}</div>
           </div>
           <div class="meta__item">
-            <div class="meta__k">Order Date</div>
-            <div class="meta__v">{{ orderDateLabel(s.orderDate) }}</div>
+            <div class="meta__k">Order Status</div>
+            <div class="meta__v">{{ s.orderStatus }}</div>
           </div>
           <div class="meta__item">
             <div class="meta__k">Payment Status</div>
             <div class="meta__v">{{ s.paymentStatus }}</div>
           </div>
-        </div>
-
-        <div class="next">
-          <div class="next__title">What’s Next?</div>
-          <div class="next__grid">
-            <div class="ncard">
-              <div class="ncard__dot" aria-hidden="true"></div>
-              <div>
-                <div class="ncard__t">Sample Collection</div>
-                <div class="ncard__s">Our phlebotomist will visit your {{ s.collectionMode === 'home' ? 'home' : 'chosen center' }} as scheduled</div>
-              </div>
-            </div>
-            <div class="ncard">
-              <div class="ncard__dot" aria-hidden="true"></div>
-              <div>
-                <div class="ncard__t">Sample Testing</div>
-                <div class="ncard__s">Your samples will be tested at our NABL accredited labs</div>
-              </div>
-            </div>
-            <div class="ncard">
-              <div class="ncard__dot" aria-hidden="true"></div>
-              <div>
-                <div class="ncard__t">Reports Ready</div>
-                <div class="ncard__s">You will receive your reports within the promised turnaround time</div>
-              </div>
-            </div>
+          <div class="meta__item">
+            <div class="meta__k">Order Date</div>
+            <div class="meta__v">{{ orderDateLabel(s.checkoutTimestamp) }}</div>
+          </div>
+          <div class="meta__item">
+            <div class="meta__k">Total Amount</div>
+            <div class="meta__v green">{{ s.totalAmount | currency:'INR':'symbol':'1.0-0' }}</div>
           </div>
         </div>
 
-        <div class="details">
-          <div class="details__title">Order Details</div>
-
-          <div class="rcard">
-            <div class="rcard__head">
-              <div class="rcard__title">1. Address Details</div>
-            </div>
-            <div class="rcard__body">
-              <div class="tag">{{ s.collectionMode === 'home' ? 'Home Collection' : 'Center Visit' }}</div>
-              @if (s.collectionMode === 'home' && s.address) {
-                <div class="rcard__line">{{ s.address.addressLine1 }}, {{ s.address.city }} - {{ s.address.postalCode }}</div>
-              } @else {
-                <div class="rcard__line">{{ labLabel(s.selectedLab) }}</div>
-              }
-              <div class="rcard__line muted">Mobile: {{ s.contact.mobile }}</div>
+        @if (s.paymentRedirectUrl) {
+          <div class="next">
+            <div class="next__title">Payment Next Step</div>
+            <div class="hint">Continue to the payment page to complete this order.</div>
+            <div class="actions">
+              <a class="btn" [href]="s.paymentRedirectUrl">Continue Payment</a>
             </div>
           </div>
-
-          <div class="rcard">
-            <div class="rcard__head">
-              <div class="rcard__title">2. Appointment Details</div>
-            </div>
-            <div class="rcard__cols">
-              <div class="kv">
-                <div class="kv__k">Collection Type</div>
-                <div class="kv__v">{{ s.collectionMode === 'home' ? 'Home Collection' : 'Center Visit' }}</div>
-              </div>
-              <div class="kv">
-                <div class="kv__k">Date</div>
-                <div class="kv__v">{{ s.appointment.date }}</div>
-              </div>
-              <div class="kv">
-                <div class="kv__k">Time</div>
-                <div class="kv__v">{{ s.appointment.time }}</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="rcard">
-            <div class="rcard__head">
-              <div class="rcard__title">3. Payment Method</div>
-            </div>
-            <div class="rcard__body">
-              <div class="rcard__line">{{ paymentMethodLabel(s.paymentMethod) }}</div>
-              <div class="rcard__line muted">Amount Paid: {{ estimatedTotal() | currency:'INR':'symbol':'1.0-0' }}</div>
-            </div>
-          </div>
-        </div>
+        }
 
         <div class="cta">
           <div class="cta__left">
             <div class="cta__t">Track your reports in real-time</div>
-            <div class="cta__s">You will receive an SMS & email once your reports are ready.</div>
+            <div class="cta__s">You will receive an SMS or email once your reports are ready.</div>
           </div>
           <a class="btn btn--ghost" [routerLink]="['/']">Go to Home</a>
         </div>
       </div>
-
-      <aside class="summary">
-        <div class="summary__panel">
-          <div class="summary__head">
-            <h2>Order Summary</h2>
-            <div class="summary__sub">{{ s.items.length }} Items</div>
-          </div>
-
-          <div class="sum-items">
-            @for (item of s.items; track item.productId) {
-              <div class="sum-item">
-                <div class="sum-item__icon" aria-hidden="true"></div>
-                <div class="sum-item__meta">
-                  <div class="sum-item__name">{{ item.name }}</div>
-                  <div class="sum-item__sub">Qty {{ item.quantity }}</div>
-                </div>
-                <div class="sum-item__amt">{{ item.unitPrice | currency:'INR':'symbol':'1.0-0' }}</div>
-              </div>
-            }
-          </div>
-
-          <div class="row"><span>Subtotal ({{ s.items.length }} items)</span><strong>{{ s.subtotal | currency:'INR':'symbol':'1.0-0' }}</strong></div>
-          <div class="row"><span>Discount</span><strong class="green">-{{ s.discount | currency:'INR':'symbol':'1.0-0' }}</strong></div>
-          <div class="row"><span>Convenience Fee</span><strong>{{ s.convenienceFee | currency:'INR':'symbol':'1.0-0' }}</strong></div>
-          <div class="divider"></div>
-          <div class="total">
-            <span>Amount Paid</span>
-            <strong class="total__amt">{{ estimatedTotal() | currency:'INR':'symbol':'1.0-0' }}</strong>
-          </div>
-
-          <div class="safe">
-            <div class="safe__dot" aria-hidden="true"></div>
-            <div>
-              <div class="safe__t">Secure & Safe</div>
-              <div class="safe__s">Your data is protected and 100% secure</div>
-            </div>
-          </div>
-        </div>
-      </aside>
     </div>
   } @else {
     <div class="panel">
       <h1 class="h1">Order Confirmation</h1>
-      <div class="hint">We couldn’t load the order details. Please return to the checkout flow.</div>
+      <div class="hint">We couldn't load the order details. Please return to the checkout flow.</div>
       <div class="actions">
         <a class="btn" [routerLink]="['/checkout']">Back to Checkout</a>
       </div>
