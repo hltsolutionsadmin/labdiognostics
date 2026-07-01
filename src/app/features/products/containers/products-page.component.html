@@ -71,7 +71,7 @@
 
   <div class="section-head">
     <h2 class="section-title">Popular Packages</h2>
-    <a class="view-all" routerLink="/products">View All</a>
+    <a class="view-all" routerLink="/packages">View All</a>
   </div>
   <div class="grid">
     @for (p of filtered(); track p.id) {
@@ -81,12 +81,14 @@
 
   <div class="section-head">
     <h2 class="section-title">Popular Tests</h2>
-    <a class="view-all" routerLink="/products">View All</a>
+    <a class="view-all" routerLink="/tests">View All</a>
   </div>
 
   <div class="grid grid--compact">
-    @for (p of filtered(); track p.id) {
-      <app-product-card [product]="p" (addToCart)="onAdd($event)" />
+    @for (t of tests(); track t.id) {
+      <app-product-card [product]="t" (addToCart)="onAdd($event)" />
     }
   </div>
 </section>
+
+
