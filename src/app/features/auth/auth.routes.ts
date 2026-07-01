@@ -28,5 +28,11 @@ export const AUTH_ROUTES: Routes = [
     path: 'orders',
     component: OrderHistoryPageComponent,
     canActivate: [authGuard]
+  },
+  {
+    path: 'addresses',
+    loadComponent: () =>
+      import('./containers/address-page.component').then((m) => m.AddressPageComponent),
+    canActivate: [authGuard]
   }
 ];
