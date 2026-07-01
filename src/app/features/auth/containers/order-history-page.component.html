@@ -126,7 +126,7 @@
                 @if (btn === '...') {
                   <span class="dots2">…</span>
                 } @else {
-                  <button class="pg" [class.is-active]="currentPage() === btn" type="button" (click)="goToPage(btn)">{{ btn + 1 }}</button>
+                  <button class="pg" [class.is-active]="currentPage() === btn" type="button" (click)="goToPage(btn)">{{ displayPage(btn) }}</button>
                 }
               }
               <button class="pg" type="button" aria-label="Next" (click)="nextPage()" [disabled]="currentPage() === displayTotalPages() - 1">›</button>

@@ -33,13 +33,19 @@ export type CheckoutResponse = {
 };
 
 export type OrderItem = {
-  orderId: string;
-  id?: string;
-  packageName?: string;
-  testName?: string;
-  orderDate: string;
-  totalAmount: number;
-  orderStatus: string;
+    id: string;
+  status: string;
+  totalPrice: number;
+  createdDate: string;
+
+  lineItems: {
+    productId: string;
+    productName: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    status: string;
+  }[];
 };
 
 export type OrdersResponse = {
