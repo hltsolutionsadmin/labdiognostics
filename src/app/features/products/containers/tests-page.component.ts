@@ -96,12 +96,60 @@ export class TestsPageComponent {
     return list;
   });
 
-  readonly countLabel = computed(() => {
-    const count = this.filtered().length;
-    const start = count > 0 ? 1 : 0;
-    const end = count;
-    return `Showing ${start} - ${end} of ${count} tests`;
+  private readonly pageSize = 5;
+  readonly currentPage = signal<number>(1);
+
+  readonly totalItems = computed(() => this.filtered().length);
+  readonly totalPages = computed(() => {
+    const total = this.totalItems();
+    return total === 0 ? 1 : Math.ceil(total / this.pageSize);
   });
+
+  readonly pagedItems = computed(() => {
+    const page = this.currentPage();
+    const startIdx = (page - 1) * this.pageSize;
+    return this.filtered().slice(startIdx, startIdx + this.pageSize);
+  });
+
+  readonly countLabel = computed(() => {
+    const total = this.totalItems();
+    if (total === 0) return `Showing 0 - 0 of 0 tests`;
+
+    const page = this.currentPage();
+    const start = (page - 1) * this.pageSize + 1;
+    const end = Math.min(page * this.pageSize, total);
+    return `Showing ${start}–${end} of ${total} tests`;
+  });
+
+  readonly visiblePages = computed(() => {
+    const pages = this.totalPages();
+    const current = this.currentPage();
+    if (pages <= 1) return [1];
+    if (pages === 2) return [1, 2];
+    if (pages === 3) return [1, 2, 3];
+
+    const windowSize = 5;
+    let start = current - Math.floor(windowSize / 2);
+    let end = start + windowSize - 1;
+
+    if (start < 1) {
+      start = 1;
+      end = windowSize;
+    }
+    if (end > pages) {
+      end = pages;
+      start = Math.max(1, end - windowSize + 1);
+    }
+
+    const res: number[] = [];
+    for (let i = start; i <= end; i++) res.push(i);
+    return res;
+  });
+
+  goToPage(pageNo: number): void {
+    const p = Math.max(1, Math.min(pageNo, this.totalPages()));
+    this.currentPage.set(p);
+  }
 
   categoryCount(cat: string): number {
     if (cat === 'All') return this.products().length;
@@ -112,4 +160,5 @@ export class TestsPageComponent {
   onAdd(product: Product): void {
     this.cart.addProductFromProduct(product, 1).subscribe();
   }
+
 }

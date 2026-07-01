@@ -76,26 +76,33 @@
 
       <div class="pager">
         <div class="pager__left">
-          <button class="pg pg--nav" type="button" aria-label="Prev">‹</button>
-          <button class="pg is-active" type="button">1</button>
-          <button class="pg" type="button">2</button>
-          <button class="pg" type="button">3</button>
-          <button class="pg" type="button">4</button>
-          <span class="dots">…</span>
-          <button class="pg" type="button">8</button>
-          <button class="pg pg--nav" type="button" aria-label="Next">›</button>
-        </div>
+          <button
+            class="pg pg--nav"
+            type="button"
+            aria-label="Prev"
+            [disabled]="currentPage() === 1"
+            (click)="goToPage(currentPage() - 1)"
+          >‹</button>
 
-        <div class="pager__right">
-          <span class="muted">Show</span>
-          <select class="pager__select">
-            <option>12</option>
-            <option>24</option>
-            <option>48</option>
-          </select>
-          <span class="muted">per page</span>
+          @for (pageNo of visiblePages(); track pageNo) {
+            <button
+              class="pg"
+              type="button"
+              [class.is-active]="pageNo === currentPage()"
+              (click)="goToPage(pageNo)"
+            >{{ pageNo }}</button>
+          }
+
+          <button
+            class="pg pg--nav"
+            type="button"
+            aria-label="Next"
+            [disabled]="currentPage() === totalPages()"
+            (click)="goToPage(currentPage() + 1)"
+          >›</button>
         </div>
       </div>
+
     </div>
   </div>
 </section>
