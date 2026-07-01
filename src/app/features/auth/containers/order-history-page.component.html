@@ -47,80 +47,102 @@
         <div class="filters">
           <div class="searchWrap">
             <span class="sico" aria-hidden="true">🔎</span>
-            <input class="search" type="text" placeholder="Search by Order ID, Package or Test" />
+            <input class="search" type="text" placeholder="Search by Order ID, Package or Test" (input)="onSearchChange($event)" />
           </div>
 
-          <select class="select" aria-label="All Statuses">
-            <option>All Statuses</option>
-            <option>Completed</option>
-            <option>Processing</option>
-            <option>Cancelled</option>
-            <option>Sample Collected</option>
+          <select class="select" aria-label="All Statuses" (change)="onStatusChange($event)">
+            <option value="All">All Statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="Confirmed">Confirmed</option>
+            <option value="Completed">Completed</option>
+            <option value="Processing">Processing</option>
+            <option value="Cancelled">Cancelled</option>
+            <option value="Sample Collected">Sample Collected</option>
           </select>
 
-          <button class="select" type="button">
-            <span class="cal" aria-hidden="true">📅</span>
-            Select Date Range
-          </button>
+          <div class="dateRange">
+            <input type="date" class="dateInput" (change)="onStartDateChange($event)" />
+            <span class="dateSeparator">to</span>
+            <input type="date" class="dateInput" (change)="onEndDateChange($event)" />
+          </div>
         </div>
 
-        <div class="table">
-          <div class="thead">
-            <div>Order ID</div>
-            <div>Package / Test</div>
-            <div>Date & Time</div>
-            <div>Amount</div>
-            <div>Status</div>
+        @if (isLoading()) {
+          <div class="loadingState">
+            <div class="spinner"></div>
+            <p>Loading your orders...</p>
           </div>
-
-          @for (r of rows; track r.id) {
-            <div class="trow">
-              <div class="oid">{{ r.id }}</div>
-              <div class="pt">
-                <div class="pt__t">{{ r.title }}</div>
-                <div class="pt__s">{{ r.subtitle }}</div>
-              </div>
-              <div class="dt">
-                <div class="dt__d">{{ r.dateText }}</div>
-                <div class="dt__t">{{ r.timeText }}</div>
-              </div>
-              <div class="amt">
-                <div class="amt__now">{{ r.amount | currency:'INR':'symbol':'1.0-0' }}</div>
-                @if (r.mrp) {
-                  <div class="amt__mrp">{{ r.mrp | currency:'INR':'symbol':'1.0-0' }}</div>
-                }
-              </div>
-              <div>
-                <span [class]="statusClass(r.status)">● {{ r.status }}</span>
-              </div>
+        } @else if (errorMessage()) {
+          <div class="errorState">
+            <div class="errorIcon">⚠️</div>
+            <p>{{ errorMessage() }}</p>
+            <button class="retryBtn" type="button" (click)="retryLoadOrders()">Retry</button>
+          </div>
+        } @else if (rows().length === 0) {
+          <div class="emptyState">
+            <div class="emptyIcon">📋</div>
+            <p>No orders found.</p>
+          </div>
+        } @else {
+          <div class="table">
+            <div class="thead">
+              <div>Order ID</div>
+              <div>Package / Test</div>
+              <div>Date & Time</div>
+              <div>Amount</div>
+              <div>Status</div>
             </div>
-          }
-        </div>
 
-        <div class="foot">
-          <div class="show">{{ showingLabel() }}</div>
-
-          <div class="pager">
-            <button class="pg" type="button" aria-label="Prev">‹</button>
-            <button class="pg is-active" type="button">1</button>
-            <button class="pg" type="button">2</button>
-            <button class="pg" type="button">3</button>
-            <button class="pg" type="button">4</button>
-            <span class="dots2">…</span>
-            <button class="pg" type="button">6</button>
-            <button class="pg" type="button" aria-label="Next">›</button>
+            @for (r of rows(); track r.id) {
+              <div class="trow">
+                <div class="oid">{{ r.id }}</div>
+                <div class="pt">
+                  <div class="pt__t">{{ r.title }}</div>
+                  <div class="pt__s">{{ r.subtitle }}</div>
+                </div>
+                <div class="dt">
+                  <div class="dt__d">{{ r.dateText }}</div>
+                  <div class="dt__t">{{ r.timeText }}</div>
+                </div>
+                <div class="amt">
+                  <div class="amt__now">{{ r.amount | currency:'INR':'symbol':'1.0-0' }}</div>
+                  @if (r.mrp) {
+                    <div class="amt__mrp">{{ r.mrp | currency:'INR':'symbol':'1.0-0' }}</div>
+                  }
+                </div>
+                <div>
+                  <span [class]="statusClass(r.status)">● {{ r.status }}</span>
+                </div>
+              </div>
+            }
           </div>
 
-          <div class="perPage">
-            <span class="muted">Show</span>
-            <select class="perSelect" aria-label="Per page">
-              <option>7</option>
-              <option>10</option>
-              <option>20</option>
-            </select>
-            <span class="muted">per page</span>
+          <div class="foot">
+            <div class="show">{{ showingLabel() }}</div>
+
+            <div class="pager">
+              <button class="pg" type="button" aria-label="Prev" (click)="previousPage()" [disabled]="currentPage() === 0">‹</button>
+              @for (btn of paginationButtons(); track btn) {
+                @if (btn === '...') {
+                  <span class="dots2">…</span>
+                } @else {
+                  <button class="pg" [class.is-active]="currentPage() === btn" type="button" (click)="goToPage(btn)">{{ btn + 1 }}</button>
+                }
+              }
+              <button class="pg" type="button" aria-label="Next" (click)="nextPage()" [disabled]="currentPage() === displayTotalPages() - 1">›</button>
+            </div>
+
+            <div class="perPage">
+              <span class="muted">Show</span>
+              <select class="perSelect" aria-label="Per page" (change)="onPageSizeChange($event)">
+                <option [selected]="pageSize() === 7" value="7">7</option>
+                <option [selected]="pageSize() === 10" value="10">10</option>
+                <option [selected]="pageSize() === 20" value="20">20</option>
+              </select>
+              <span class="muted">per page</span>
+            </div>
           </div>
-        </div>
+        }
       </div>
 
       <div class="trust">
