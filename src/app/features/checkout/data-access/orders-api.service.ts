@@ -32,6 +32,26 @@ export type CheckoutResponse = {
   razorpayKeyId: string | null;
 };
 
+export type OrderItem = {
+  orderId: string;
+  id?: string;
+  packageName?: string;
+  testName?: string;
+  orderDate: string;
+  totalAmount: number;
+  orderStatus: string;
+};
+
+export type OrdersResponse = {
+  content: ReadonlyArray<OrderItem>;
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+};
+
 @Injectable({ providedIn: 'root' })
 export class OrdersApiService {
   private readonly http = inject(HttpClient);
@@ -39,5 +59,9 @@ export class OrdersApiService {
 
   checkout(request: CheckoutRequest): Observable<CheckoutResponse> {
     return this.http.post<CheckoutResponse>(`${this.baseUrl}/api/orders/checkout`, request);
+  }
+
+  getMyOrders(page: number = 0, size: number = 10): Observable<OrdersResponse> {
+    return this.http.get<OrdersResponse>(`${this.baseUrl}/api/orders/me?page=${page}&size=${size}`);
   }
 }

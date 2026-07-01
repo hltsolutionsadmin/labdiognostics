@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
-import { OrderHistoryPageComponent } from './containers/order-history-page.component';
 
 export const AUTH_ROUTES: Routes = [
   {
@@ -26,7 +25,8 @@ export const AUTH_ROUTES: Routes = [
   },
   {
     path: 'orders',
-    component: OrderHistoryPageComponent,
+    loadComponent: () =>
+      import('./containers/order-history-page.component').then((m) => m.OrderHistoryPageComponent),
     canActivate: [authGuard]
   },
   {
